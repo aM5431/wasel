@@ -1,0 +1,373 @@
+<!-- This file contains the complete replacement for the Adhkar tab section -->
+<!-- Lines 1238-1539 in islamic-reminders.ejs -->
+
+<div id="tab-adhkar" class="tab-pane">
+
+    <!-- Sub-Tabs Navigation -->
+    <div class="tabs"
+        style="margin-bottom: 25px; border-bottom: 2px solid var(--border); background: var(--bg-secondary); padding: 8px; border-radius: 10px 10px 0 0;">
+        <button onclick="switchAdhkarSubTab('morning')" id="adhkar-subtab-morning" class="tab-btn active"
+            style="flex:1;">
+            <i class="fas fa-sun"></i> أذكار الصباح
+        </button>
+        <button onclick="switchAdhkarSubTab('evening')" id="adhkar-subtab-evening" class="tab-btn" style="flex:1;">
+            <i class="fas fa-moon"></i> أذكار المساء
+        </button>
+        <button onclick="switchAdhkarSubTab('hadith')" id="adhkar-subtab-hadith" class="tab-btn" style="flex:1;">
+            <i class="fas fa-book-open"></i> حديث اليوم
+        </button>
+        <button onclick="switchAdhkarSubTab('quran')" id="adhkar-subtab-quran" class="tab-btn" style="flex:1;">
+            <i class="fas fa-quran"></i> القرآن
+        </button>
+        <button onclick="switchAdhkarSubTab('variety')" id="adhkar-subtab-variety" class="tab-btn" style="flex:1;">
+            <i class="fas fa-photo-video"></i> منوعات
+        </button>
+    </div>
+
+    <!-- Morning Adhkar Panel -->
+    <div id="adhkar-panel-morning" class="adhkar-sub-panel">
+        <div class="card">
+            <h2><i class="fas fa-sun" style="color: #FFC107;"></i> أذكار الصباح</h2>
+
+            <div class="prayer-list-item">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div
+                        style="background: rgba(255, 193, 7, 0.1); color: #FFC107; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-sun" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0; font-size: 1.1rem;">وقت الإرسال</h4>
+                        <input type="time" class="form-control" id="morning_time"
+                            style="width:130px; padding:8px; margin-top: 8px; font-size: 1rem;"
+                            value="<%= adhkarSettings.morning_time || '07:00' %>">
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="morning_enabled" <%=adhkarSettings.morning_enabled ? 'checked' : '' %>>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <!-- Text Length -->
+            <div style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                <h4 style="margin: 0 0 10px 0;">طول النص:</h4>
+                <div style="display: flex; gap: 10px;">
+                    <label
+                        style="flex: 1; cursor: pointer; background: var(--bg-main); padding: 12px; border-radius: 8px; border: 2px solid var(--border); display: flex; align-items: center; gap: 10px; transition: all 0.3s;">
+                        <input type="radio" name="text_length" value="full" <%=(!adhkarSettings.text_length ||
+                            adhkarSettings.text_length==='full' ) ? 'checked' : '' %>>
+                        <span>📜 نص كامل</span>
+                    </label>
+                    <label
+                        style="flex: 1; cursor: pointer; background: var(--bg-main); padding: 12px; border-radius: 8px; border: 2px solid var(--border); display: flex; align-items: center; gap: 10px; transition: all 0.3s;">
+                        <input type="radio" name="text_length" value="short" <%=adhkarSettings.text_length==='short'
+                            ? 'checked' : '' %>>
+                        <span>📝 مختصر (3 أذكار)</span>
+                    </label>
+                </div>
+                <small style="color: var(--text-muted); display: block; margin-top: 10px;">
+                    ⚠️ أذكار الصباح تُرسل كنص فقط (بدون صور) حسب القواعد الشرعية
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evening Adhkar Panel -->
+    <div id="adhkar-panel-evening" class="adhkar-sub-panel" style="display: none;">
+        <div class="card">
+            <h2><i class="fas fa-moon" style="color: #3F51B5;"></i> أذكار المساء</h2>
+
+            <div class="prayer-list-item">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div
+                        style="background: rgba(63, 81, 181, 0.1); color: #3F51B5; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-moon" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0; font-size: 1.1rem;">وقت الإرسال</h4>
+                        <input type="time" class="form-control" id="evening_time"
+                            style="width:130px; padding:8px; margin-top: 8px; font-size: 1rem;"
+                            value="<%= adhkarSettings.evening_time || '17:00' %>">
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="evening_enabled" <%=adhkarSettings.evening_enabled ? 'checked' : '' %>>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <!-- Text Length (same as morning) -->
+            <div style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                <h4 style="margin: 0 0 10px 0;">طول النص:</h4>
+                <div style="display: flex; gap: 10px;">
+                    <label
+                        style="flex: 1; cursor: pointer; background: var(--bg-main); padding: 12px; border-radius: 8px; border: 2px solid var(--border); display: flex; align-items: center; gap: 10px;">
+                        <input type="radio" name="text_length" value="full" <%=(!adhkarSettings.text_length ||
+                            adhkarSettings.text_length==='full' ) ? 'checked' : '' %>>
+                        <span>📜 نص كامل</span>
+                    </label>
+                    <label
+                        style="flex: 1; cursor: pointer; background: var(--bg-main); padding: 12px; border-radius: 8px; border: 2px solid var(--border); display: flex; align-items: center; gap: 10px;">
+                        <input type="radio" name="text_length" value="short" <%=adhkarSettings.text_length==='short'
+                            ? 'checked' : '' %>>
+                        <span>📝 مختصر (3 أذكار)</span>
+                    </label>
+                </div>
+                <small style="color: var(--text-muted); display: block; margin-top: 10px;">
+                    ⚠️ أذكار المساء تُرسل كنص فقط (بدون صور) حسب القواعد الشرعية
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hadith Panel -->
+    <div id="adhkar-panel-hadith" class="adhkar-sub-panel" style="display: none;">
+        <div class="card">
+            <h2><i class="fas fa-book-open" style="color: #4CAF50;"></i> حديث اليوم</h2>
+
+            <div class="prayer-list-item">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div
+                        style="background: rgba(76, 175, 80, 0.1); color: #4CAF50; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-book" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0; font-size: 1.1rem;">وقت الإرسال</h4>
+                        <input type="time" class="form-control" id="hadith_time"
+                            style="width:130px; padding:8px; margin-top: 8px; font-size: 1rem;"
+                            value="<%= adhkarSettings.hadith_time || '12:00' %>">
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="hadith_enabled" <%=adhkarSettings.hadith_enabled ? 'checked' : '' %>>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <!-- Experience Mode -->
+            <div style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                <h4 style="margin: 0 0 10px 0;">نمط العرض:</h4>
+                <input type="hidden" id="experience_mode_input"
+                    value="<%= adhkarSettings.morning_source === 'manual' ? 'manual' : 'auto' %>">
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="setExperienceModeUI('manual')" id="btn-mode-manual"
+                        class="btn mode-btn <%= adhkarSettings.morning_source === 'manual' ? 'mode-btn-active' : 'mode-btn-inactive' %>">
+                        📖 نص فقط
+                    </button>
+                    <button onclick="setExperienceModeUI('auto')" id="btn-mode-auto"
+                        class="btn mode-btn <%= adhkarSettings.morning_source !== 'manual' ? 'mode-btn-active' : 'mode-btn-inactive' %>">
+                        🖼️ نص + صورة
+                    </button>
+                </div>
+                <small style="color: var(--text-muted); display: block; margin-top: 10px;">
+                    💡 يمكن إضافة صورة إسلامية مع الحديث في الوضع المرئي
+                </small>
+            </div>
+
+            <!-- Media Preference (Visual Mode Only) -->
+            <div id="media-pref-container" class="<%= adhkarSettings.morning_source !== 'manual' ? '' : 'hidden' %>"
+                style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                <h4 style="margin:0 0 8px 0; font-size:1rem;">نوع الوسائط 🎨</h4>
+                <div style="display: flex; gap: 10px;">
+                    <label
+                        style="flex: 1; cursor: pointer; background: var(--bg-main); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                        <input type="radio" name="media_pref" value="image" <%=adhkarSettings.media_preference==='image'
+                            ? 'checked' : '' %>> صور 🖼️
+                    </label>
+                    <label
+                        style="flex: 1; cursor: pointer; background: var(--bg-main); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                        <input type="radio" name="media_pref" value="video" <%=adhkarSettings.media_preference==='video'
+                            ? 'checked' : '' %>> فيديو 🎬
+                    </label>
+                    <label
+                        style="flex: 1; cursor: pointer; background: var(--bg-main); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                        <input type="radio" name="media_pref" value="mixed"
+                            <%=(adhkarSettings.media_preference==='mixed' || !adhkarSettings.media_preference)
+                            ? 'checked' : '' %>> كوكتيل 🔀
+                    </label>
+                </div>
+            </div>
+
+            <!-- Instant Send Tool -->
+            <div
+                style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05)); padding: 20px; border-radius: 10px; margin-top: 20px; border: 1px solid rgba(76, 175, 80, 0.3);">
+                <h4 style="margin: 0 0 15px 0;"><i class="fas fa-paper-plane"></i> إرسال فوري</h4>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <select id="hadith-book-select" class="form-control" style="flex: 2;">
+                        <option value="bukhari">صحيح البخاري</option>
+                        <option value="muslim">صحيح مسلم</option>
+                    </select>
+                    <button onclick="fetchRandomHadith()" class="btn btn-secondary" style="flex: 1;">
+                        <i class="fas fa-random"></i> حديث عشوائي
+                    </button>
+                </div>
+                <div
+                    style="background: var(--bg-main); padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                    <textarea id="preview-text" class="form-control" rows="5" readonly
+                        style="background: transparent; border: none; font-family: 'Amiri', serif; font-size: 1.1rem; line-height: 1.8; margin-bottom: 10px;"></textarea>
+                    <input type="text" id="preview-source" class="form-control" readonly
+                        style="background: transparent; border: none; font-weight: bold; color: var(--primary); text-align: center;">
+                </div>
+                <button onclick="sendInstantMessage()" class="btn btn-primary" style="width: 100%; margin-top: 15px;">
+                    <i class="fab fa-whatsapp"></i> إرسال الآن
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quran Panel -->
+    <div id="adhkar-panel-quran" class="adhkar-sub-panel" style="display: none;">
+        <div class="card">
+            <h2><i class="fas fa-quran" style="color: #9C27B0;"></i> القرآن الكريم</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">
+                📖 ورد يومي من القرآن الكريم - يتم إرسال صفحات من الجزء المحدد كصور عالية الجودة
+            </p>
+
+            <div class="prayer-list-item">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div
+                        style="background: rgba(156, 39, 176, 0.1); color: #9C27B0; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-quran" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0; font-size: 1.1rem;">وقت الإرسال</h4>
+                        <input type="time" class="form-control" id="quran_time"
+                            style="width:130px; padding:8px; margin-top: 8px; font-size: 1rem;" value="09:00">
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="quran_enabled">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <!-- Quran Settings -->
+            <div style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                <h4 style="margin: 0 0 15px 0;">إعدادات الختمة:</h4>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">عدد الصفحات يومياً:</label>
+                    <select id="quran_pages_per_day" class="form-control">
+                        <option value="3">3 صفحات (ختمة في شهرين)</option>
+                        <option value="5">5 صفحات (ختمة في شهر)</option>
+                        <option value="10">10 صفحات (ختمة في نصف شهر)</option>
+                        <option value="20">20 صفحات (ختمة في أسبوعين)</option>
+                    </select>
+                </div>
+
+                <small style="color: var(--text-muted); display: block;">
+                    ⚠️ القرآن يُرسل كصور فقط (بدون نصوص) للحفاظ على التنسيق الأصلي
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Variety Panel -->
+    <div id="adhkar-panel-variety" class="adhkar-sub-panel" style="display: none;">
+        <div class="card">
+            <h2><i class="fas fa-photo-video" style="color: #FF5722;"></i> منوعات إسلامية</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">
+                🎨 محتوى إسلامي متنوع (صور، فيديوهات، أدعية) - إضافي للأذكار اليومية
+            </p>
+
+            <div class="prayer-list-item">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div
+                        style="background: rgba(255, 87, 34, 0.1); color: #FF5722; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-photo-video" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0; font-size: 1.1rem;">وقت الإرسال</h4>
+                        <input type="time" class="form-control" id="content_time"
+                            style="width:130px; padding:8px; margin-top: 8px; font-size: 1rem;"
+                            value="<%= adhkarSettings.content_time || '21:00' %>">
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="content_enabled" <%=adhkarSettings.content_enabled ? 'checked' : '' %>>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <!-- Media Type -->
+            <div style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                <h4 style="margin: 0 0 10px 0;">نوع المحتوى:</h4>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <label
+                        style="cursor: pointer; background: var(--bg-main); padding: 12px; border-radius: 8px; border: 2px solid var(--border); text-align: center; transition: all 0.3s;">
+                        <input type="radio" name="content_type" value="image" <%=adhkarSettings.content_type==='image'
+                            ? 'checked' : '' %>>
+                        <div style="font-size: 2rem; margin-bottom: 5px;">🖼️</div>
+                        <span style="font-size: 0.9rem;">صور فقط</span>
+                    </label>
+                    <label
+                        style="cursor: pointer; background: var(--bg-main); padding: 12px; border-radius: 8px; border: 2px solid var(--border); text-align: center; transition: all 0.3s;">
+                        <input type="radio" name="content_type" value="video" <%=adhkarSettings.content_type==='video'
+                            ? 'checked' : '' %>>
+                        <div style="font-size: 2rem; margin-bottom: 5px;">🎬</div>
+                        <span style="font-size: 0.9rem;">فيديو فقط</span>
+                    </label>
+                    <label
+                        style="cursor: pointer; background: var(--bg-main); padding: 12px; border-radius: 8px; border: 2px solid var(--border); text-align: center; transition: all 0.3s;">
+                        <input type="radio" name="content_type" value="mixed" <%=(adhkarSettings.content_type==='mixed'
+                            || !adhkarSettings.content_type) ? 'checked' : '' %>>
+                        <div style="font-size: 2rem; margin-bottom: 5px;">🔀</div>
+                        <span style="font-size: 0.9rem;">كوكتيل</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fasting Reminders (Shared) -->
+    <div class="card" style="margin-top: 25px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 style="border: none; margin: 0; padding: 0;"><i class="fas fa-moon"></i> تذكيرات الصيام</h2>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <small style="color: var(--text-muted);">وقت التنبيه:</small>
+                <input type="time" class="form-control" id="fasting_reminder_time" style="width:100px; padding:4px;"
+                    value="<%= fastingSettings.reminder_time || '20:00' %>">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+            <% const fastingTypes=[ { id: 'monday_thursday' , label: 'الإثنين والخميس' }, { id: 'white_days' ,
+                label: 'الأيام البيض' }, { id: 'ashura' , label: 'عاشوراء' }, { id: 'ramadan_alerts' ,
+                label: 'تنبيهات رمضان' } ]; %>
+                <% fastingTypes.forEach(type=> { %>
+                    <div class="prayer-list-item" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+                        <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                            <h4 style="margin: 0; font-size: 0.95rem;">
+                                <%= type.label %>
+                            </h4>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="fasting_<%= type.id %>" <%=(locals.fastingSettings &&
+                                    locals.fastingSettings[type.id]) ? 'checked' : '' %>>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <% }) %>
+        </div>
+    </div>
+
+    <!-- Dua of the Day -->
+    <div class="card"
+        style="background: linear-gradient(rgba(var(--primary-rgb), 0.1), transparent); border-right: 4px solid var(--primary);">
+        <h2 style="border: none; margin-bottom: 12px; font-size: 1.1rem;"><i class="fas fa-quote-right"
+                style="color: var(--primary);"></i> دعاء اليوم</h2>
+        <p id="daily-dua"
+            style="font-style: italic; color: var(--text-main); line-height: 1.8; font-size: 1rem; margin-bottom: 0; font-weight: 500;">
+            "اللهم إني أسألك علماً نافعاً، ورزقاً طيباً، وعملاً متقبلاً"
+        </p>
+    </div>
+
+    <!-- Save Button -->
+    <div style="margin-top: 25px; text-align: center;">
+        <button onclick="saveAdhkarTabSettings()" class="btn btn-primary"
+            style="padding: 14px 40px; font-size: 1.1rem; width: 100%; max-width: 350px;">
+            <i class="fas fa-save"></i> حفظ جميع الإعدادات
+        </button>
+    </div>
+
+</div> <!-- End Tab Adhkar -->

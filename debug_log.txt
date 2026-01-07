@@ -1,0 +1,98 @@
+
+> whatsapp-saas-platform@1.0.0 start
+> node server.js
+
+ظ£à Node.js optimizations applied
+ظ£à Server optimizations applied
+Initializing Database Schema...
+Updating existing plans limits...
+ظ╣ي╕  Admin tabs already exist (9 tabs)
+ظ£à Activity logs table check/create done
+Database Schema Initialized.
+Starting Scheduler Service...
+ظ£à Scheduler initialized successfully
+Server initialization completed
+Server is running on http://localhost:3001
+≡ا¤ Restoring WhatsApp sessions...
+Found 1 sessions to restore (attempting reconnect)
+Restoring session (attempt 1/3): 11
+[SessionManager] Step 1: Loading auth state for user_admin-master-001_1767710091662
+[SessionManager] Step 1: Auth state loaded
+[SessionManager] Step 2: Fetching latest Baileys version
+[SessionManager] Step 2: Using Baileys version: 2.3000.1027934701
+[SessionManager] Step 3: Getting optimal settings
+≡اë Session restoration completed
+ظ£à Session user_admin-master-001_1767710091662 connected successfully
+ظ£à Session user_admin-master-001_1767710091662 connected successfully
+[Scheduler] Found 2 active configs
+[Scheduler] Checking config 41d3bead-16e9-455b-ae7a-0a3e53b9d82a at 17:48 (mode: manual)
+[Debug] Checking prayer fajr: enabled=1, time=17:35, reminder=10
+[Debug] No match: Current 17:48 != Reminder 17:25 (Prayer: 17:35)
+[Debug] Checking prayer dhuhr: enabled=1, time=12:00, reminder=10
+[Debug] No match: Current 17:48 != Reminder 11:50 (Prayer: 12:00)
+[Debug] Checking prayer asr: enabled=1, time=15:30, reminder=10
+[Debug] No match: Current 17:48 != Reminder 15:20 (Prayer: 15:30)
+[Debug] Checking prayer maghrib: enabled=1, time=18:00, reminder=10
+[Debug] No match: Current 17:48 != Reminder 17:50 (Prayer: 18:00)
+[Debug] Checking prayer isha: enabled=1, time=19:30, reminder=10
+[Debug] No match: Current 17:48 != Reminder 19:20 (Prayer: 19:30)
+[Scheduler] Checking config conf-yrvlui2un at 17:48 (mode: auto)
+[Debug] Checking prayer fajr: enabled=1, time=05:16, reminder=10
+[Debug] No match: Current 17:48 != Reminder 05:06 (Prayer: 05:16)
+[Debug] Checking prayer dhuhr: enabled=1, time=12:02, reminder=10
+[Debug] No match: Current 17:48 != Reminder 11:52 (Prayer: 12:02)
+[Debug] Checking prayer asr: enabled=1, time=14:57, reminder=10
+[Debug] No match: Current 17:48 != Reminder 14:47 (Prayer: 14:57)
+[Debug] Checking prayer maghrib: enabled=1, time=17:16, reminder=10
+[Debug] No match: Current 17:48 != Reminder 17:06 (Prayer: 17:16)
+[Debug] Checking prayer isha: enabled=1, time=18:37, reminder=10
+[Debug] No match: Current 17:48 != Reminder 18:27 (Prayer: 18:37)
+[Scheduler] Found 2 active configs
+[Scheduler] Checking config 41d3bead-16e9-455b-ae7a-0a3e53b9d82a at 17:49 (mode: manual)
+[Debug] Checking prayer fajr: enabled=1, time=17:35, reminder=10
+[Debug] No match: Current 17:49 != Reminder 17:25 (Prayer: 17:35)
+[Debug] Checking prayer dhuhr: enabled=1, time=12:00, reminder=10
+[Debug] No match: Current 17:49 != Reminder 11:50 (Prayer: 12:00)
+[Debug] Checking prayer asr: enabled=1, time=15:30, reminder=10
+[Debug] No match: Current 17:49 != Reminder 15:20 (Prayer: 15:30)
+[Debug] Checking prayer maghrib: enabled=1, time=18:00, reminder=10
+[Debug] No match: Current 17:49 != Reminder 17:50 (Prayer: 18:00)
+[Debug] Checking prayer isha: enabled=1, time=19:30, reminder=10
+[Debug] No match: Current 17:49 != Reminder 19:20 (Prayer: 19:30)
+[Scheduler] Checking config conf-yrvlui2un at 17:49 (mode: auto)
+[Debug] Checking prayer fajr: enabled=1, time=05:16, reminder=10
+[Debug] No match: Current 17:49 != Reminder 05:06 (Prayer: 05:16)
+[Debug] Checking prayer dhuhr: enabled=1, time=12:02, reminder=10
+[Debug] No match: Current 17:49 != Reminder 11:52 (Prayer: 12:02)
+[Debug] Checking prayer asr: enabled=1, time=14:57, reminder=10
+[Debug] No match: Current 17:49 != Reminder 14:47 (Prayer: 14:57)
+[Debug] Checking prayer maghrib: enabled=1, time=17:16, reminder=10
+[Debug] No match: Current 17:49 != Reminder 17:06 (Prayer: 17:16)
+[Debug] Checking prayer isha: enabled=1, time=18:37, reminder=10
+[Debug] No match: Current 17:49 != Reminder 18:27 (Prayer: 18:37)
+[Scheduler] Found 2 active configs
+[Scheduler] Checking config 41d3bead-16e9-455b-ae7a-0a3e53b9d82a at 17:50 (mode: manual)
+[Debug] Checking prayer fajr: enabled=1, time=17:35, reminder=10
+[Debug] No match: Current 17:50 != Reminder 17:25 (Prayer: 17:35)
+[Debug] Checking prayer dhuhr: enabled=1, time=12:00, reminder=10
+[Debug] No match: Current 17:50 != Reminder 11:50 (Prayer: 12:00)
+[Debug] Checking prayer asr: enabled=1, time=15:30, reminder=10
+[Debug] No match: Current 17:50 != Reminder 15:20 (Prayer: 15:30)
+[Debug] Checking prayer maghrib: enabled=1, time=18:00, reminder=10
+[Scheduler] ≡اأ TRIGGER! Sending reminder for maghrib at 17:50 (Prayer: 18:00)
+[Scheduler] Sending text to 201066284516
+Formatting phone number: 201066284516 -> 201066284516@s.whatsapp.net
+ظ£à Message sent to 201066284516 via session user_admin-master-001_1767710091662
+[Debug] Checking prayer isha: enabled=1, time=19:30, reminder=10
+[Debug] No match: Current 17:50 != Reminder 19:20 (Prayer: 19:30)
+[Scheduler] Checking config conf-yrvlui2un at 17:50 (mode: auto)
+[Debug] Checking prayer fajr: enabled=1, time=05:16, reminder=10
+[Debug] No match: Current 17:50 != Reminder 05:06 (Prayer: 05:16)
+[Debug] Checking prayer dhuhr: enabled=1, time=12:02, reminder=10
+[Debug] No match: Current 17:50 != Reminder 11:52 (Prayer: 12:02)
+[Debug] Checking prayer asr: enabled=1, time=14:57, reminder=10
+[Debug] No match: Current 17:50 != Reminder 14:47 (Prayer: 14:57)
+[Debug] Checking prayer maghrib: enabled=1, time=17:16, reminder=10
+[Debug] No match: Current 17:50 != Reminder 17:06 (Prayer: 17:16)
+[Debug] Checking prayer isha: enabled=1, time=18:37, reminder=10
+[Debug] No match: Current 17:50 != Reminder 18:27 (Prayer: 18:37)

@@ -1,0 +1,25 @@
+# Docker deployment files
+node_modules/
+npm-debug.log
+.env
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# Keep these directories but ignore their contents (they'll be mounted as volumes)
+auth_info/*
+!auth_info/.gitkeep
+uploads/*
+!uploads/.gitkeep
+
+# Database (will be mounted as volume)
+database.sqlite
+database.sqlite-journal
+database.sqlite-wal
+database.sqlite-shm
+
+# Git
+.git/
+.gitignore
+README.md

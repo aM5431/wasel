@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %>
+    </title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <a href="/" class="logo">
+                <i class="fab fa-whatsapp"></i> واتساب بوت
+                <span
+                    style="font-size: 0.8rem; background: var(--border); padding: 2px 8px; border-radius: 4px; color: var(--text-muted); margin-right: 5px;">بيتا</span>
+            </a>
+
+            <nav class="main-nav">
+                <a href="#features">المميزات</a>
+                <a href="#pricing">الأسعار</a>
+                <a href="#faq">الأسئلة الشائعة</a>
+
+                <div style="width: 1px; height: 20px; background: var(--border); margin: 0 10px;"></div>
+
+                <a href="/login" class="btn-text">دخول</a>
+                <a href="/register" class="btn" style="padding: 8px 20px; font-size: 0.9rem;">إنشاء حساب</a>
+            </nav>
+
+            <button class="theme-toggle" onclick="toggleTheme()"
+                style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); margin-right:15px;">
+                <i class="fas fa-moon"></i>
+            </button>
+
+            <button class="mobile-toggle" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <script>
+        // Check local storage or system preference
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            updateThemeIcon(currentTheme);
+        }
+
+        function toggleTheme() {
+            let theme = document.documentElement.getAttribute('data-theme');
+            let newTheme = theme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.querySelector('.theme-toggle i');
+            if (theme === 'dark') {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        }
+    </script>
+
+    <main>
+        <!-- Hero Section -->
+        <% if (hero.show) { %>
+            <section class="hero-section">
+                <div class="container">
+                    <div class="hero-content">
+                        <span class="badge-new">✨ النسخة الجديدة متاحة الآن</span>
+                        <h1 class="hero-title">
+                            <%= hero.title %>
+                        </h1>
+                        <p class="hero-subtitle">
+                            <%= hero.subtitle %>
+                        </p>
+                        <div class="hero-buttons">
+                            <a href="/register" class="btn">
+                                <i class="fab fa-whatsapp" style="margin-left: 8px;"></i> ابدأ التجربة المجانية
+                            </a>
+                            <a href="#features" class="btn btn-outline">اكتشف المميزات</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <% } %>
+
+                <!-- Features Grid -->
+                <% if (features.show) { %>
+                    <section id="features" class="features-section">
+                        <div class="container">
+                            <div class="section-header">
+                                <h2 class="section-title">
+                                    <%= features.title %>
+                                </h2>
+                                <p style="color: var(--text-muted);">نقدم لك مجموعة من الأدوات الذكية لإدارة تواصلك
+                                    الديني والاجتماعي.</p>
+                            </div>
+
+                            <div class="grid-3">
+                                <% features.items.forEach(item=> { %>
+                                    <div class="feature-card">
+                                        <div class="feature-icon">
+                                            <% if (item.title.includes('صلاة')) { %> <i class="fas fa-pray"></i>
+                                                <% } else if (item.title.includes('أذكار')) { %> <i
+                                                        class="fas fa-book-open"></i>
+                                                    <% } else { %> <i class="fas fa-star"></i>
+                                                        <% } %>
+                                        </div>
+                                        <h3>
+                                            <%= item.title %>
+                                        </h3>
+                                        <p>
+                                            <%= item.desc %>
+                                        </p>
+                                    </div>
+                                    <% }) %>
+
+
+                                        <div class="feature-card">
+                                            <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                                            <h3>أمان عالي</h3>
+                                            <p>تشفير كامل للبيانات وحماية وخصوصية عالية.</p>
+                                        </div>
+                            </div>
+                        </div>
+                    </section>
+                    <% } %>
+
+                        <!-- Pricing Section -->
+                        <% if (pricing.show) { %>
+                            <section id="pricing" class="pricing-section">
+                                <div class="container">
+                                    <div class="section-header">
+                                        <h2 class="section-title">
+                                            <%= pricing.title %>
+                                        </h2>
+                                        <p style="color: var(--text-muted);">اختر الباقة المناسبة لاحتياجاتك، ابدأ
+                                            مجاناً.</p>
+                                    </div>
+
+                                    <div class="grid-3" style="max-width: 1000px; margin: 0 auto;">
+                                        <% plans.forEach(plan=> { %>
+                                            <div
+                                                class="pricing-card <%= plan.price > 0 && plan.price < 500 ? 'featured' : '' %>">
+                                                <% if (plan.is_trial) { %>
+                                                    <span
+                                                        style="background: var(--accent); color: black; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; display: inline-block;">مجاناً</span>
+                                                    <% } %>
+
+                                                        <h3>
+                                                            <%= plan.name %>
+                                                        </h3>
+                                                        <div class="price">
+                                                            <%= plan.price %> <span class="currency">ج.م</span>
+                                                        </div>
+                                                        <p style="color: var(--text-muted); margin-bottom: 20px;">كل <%=
+                                                                plan.duration_days %> يوم</p>
+
+                                                        <ul>
+                                                            <% const feats=JSON.parse(plan.features || '{}' ); %>
+                                                                <li>
+                                                                    <i class="fas fa-check-circle text-primary"></i>
+                                                                    <span>مواقيت الصلاة: <%= feats.prayer_times ? 'نعم'
+                                                                            : 'لا' %></span>
+                                                                </li>
+                                                                <li>
+                                                                    <i class="fas fa-check-circle text-primary"></i>
+                                                                    <span>الأذكار: <%= feats.adhkar ? 'نعم' : 'لا' %>
+                                                                    </span>
+                                                                </li>
+                                                                <li>
+                                                                    <i
+                                                                        class="fas fa-check-circle <%= feats.support ? 'text-primary' : 'text-disabled' %>"></i>
+                                                                    <span>دعم فني وتحديثات</span>
+                                                                </li>
+                                                        </ul>
+
+                                                        <a href="/register?plan=<%= plan.id %>"
+                                                            class="btn <%= plan.is_trial ? 'btn-outline' : '' %>"
+                                                            style="width: 100%;">
+                                                            <%= plan.is_trial ? 'ابدأ الآن' : 'اشترك' %>
+                                                        </a>
+                                            </div>
+                                            <% }) %>
+                                    </div>
+                                </div>
+                            </section>
+                            <% } %>
+
+                                <!-- FAQ Section (Placeholder) -->
+                                <section id="faq" style="padding: 100px 0; background: var(--bg-main);">
+                                    <div class="container">
+                                        <div class="section-header">
+                                            <h2 class="section-title">الأسئلة الشائعة</h2>
+                                            <p style="color: var(--text-muted);">إجابات على أسئلتك المتكررة حول الخدمة.
+                                            </p>
+                                        </div>
+                                        <div class="grid-3">
+                                            <div class="feature-card">
+                                                <h3>هل هناك فترة تجربة؟</h3>
+                                                <p>نعم، نقدم باقة تجريبية مجانية لتجربة كافة المميزات.</p>
+                                            </div>
+                                            <div class="feature-card">
+                                                <h3>كيف يتم الدفع؟</h3>
+                                                <p>حالياً نقبل التحويل عبر فودافون كاش ومحافظ الهاتف.</p>
+                                            </div>
+                                            <div class="feature-card">
+                                                <h3>هل أحتاج لتثبيت تطبيق؟</h3>
+                                                <p>لا، الخدمة تعمل سحابياً بالكامل ولا تحتاج لإبقاء هاتفك مفتوحاً.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+    </main>
+
+    <footer>
+        <div class="container">
+            <div style="margin-bottom: 20px;">
+                <i class="fab fa-whatsapp" style="font-size: 2rem; color: var(--text-muted);"></i>
+            </div>
+
+            <% if (typeof settings !== 'undefined' && settings.contact && (settings.contact.whatsapp || settings.contact.email)) { %>
+                <div class="footer-contact" style="margin-bottom: 20px;">
+                    <% if (settings.contact.whatsapp) { %>
+                        <p style="margin: 5px 0;">
+                            <i class="fab fa-whatsapp"></i> الدعم الفني: <span dir="ltr">
+                                <%= settings.contact.whatsapp %>
+                            </span>
+                        </p>
+                        <% } %>
+                            <% if (settings.contact.email) { %>
+                                <p style="margin: 5px 0;">
+                                    <i class="fas fa-envelope"></i> البريد الإلكتروني: <a
+                                        href="mailto:<%= settings.contact.email %>" style="color: var(--primary);">
+                                        <%= settings.contact.email %>
+                                    </a>
+                                </p>
+                                <% } %>
+                </div>
+                <% } %>
+
+                    <p>&copy; 2024 جميع الحقوق محفوظة لمنصة <%= typeof settings !== 'undefined' && settings.brand ? settings.brand.name : 'واتساب بوت' %>.
+                    </p>
+                    <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center;">
+                        <a href="#" style="color: var(--text-muted);"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color: var(--text-muted);"><i class="fab fa-facebook"></i></a>
+                        <a href="#" style="color: var(--text-muted);"><i class="fab fa-instagram"></i></a>
+                    </div>
+        </div>
+    </footer>
+
+
+
+    <script>
+        function toggleMenu() {
+            const nav = document.querySelector('.main-nav');
+            nav.classList.toggle('active');
+
+            const icon = document.querySelector('.mobile-toggle i');
+            if (nav.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        }
+    </script>
+</body>
+
+</html>

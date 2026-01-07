@@ -1,0 +1,2888 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التذكيرات الإسلامية | واصل</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- Admin Layout Styles (Copied from User Dashboard for Consistency) --- */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+            background: var(--bg-main);
+        }
+
+        .admin-sidebar {
+            width: 280px;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        .admin-sidebar.collapsed {
+            width: 80px;
+        }
+
+        .admin-sidebar.collapsed .admin-brand h2 span,
+        .admin-sidebar.collapsed .admin-brand p,
+        .admin-sidebar.collapsed .nav-text {
+            display: none;
+        }
+
+        .admin-sidebar.collapsed .admin-nav-item {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .admin-sidebar.collapsed .admin-nav-item i {
+            margin: 0;
+        }
+
+        .collapse-btn,
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            width: 40px !important;
+            height: 40px !important;
+            min-width: 40px !important;
+            min-height: 40px !important;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            padding: 0;
+            margin: 0;
+        }
+
+        .collapse-btn:hover,
+        .theme-toggle:hover {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border-color: var(--primary);
+        }
+
+        .admin-sidebar.collapsed .collapse-btn i {
+            transform: rotate(180deg);
+        }
+
+        .admin-brand {
+            padding: 1.5rem 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-sidebar.collapsed .brand-header {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .admin-brand h2 {
+            color: var(--primary-dark);
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-nav {
+            padding: 0 1rem;
+        }
+
+        .admin-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 6px;
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .admin-nav-item:hover {
+            background: var(--bg-secondary);
+            color: var(--primary);
+        }
+
+        .admin-nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+        }
+
+        .admin-nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .admin-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .admin-sidebar {
+                position: fixed;
+                right: -280px;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+                transition: right 0.3s ease;
+                box-shadow: var(--shadow-lg);
+            }
+
+            .admin-sidebar.open {
+                right: 0;
+            }
+
+            .sidebar-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .admin-content {
+                padding: 5rem 1rem 2rem;
+            }
+        }
+
+        /* --- Islamic Reminders Specific Styles --- */
+        .content-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-main);
+            /* Ensure background for sticky */
+            padding: 10px 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 900;
+        }
+
+        /* Mobile specific adjustments for header */
+        @media (max-width: 1024px) {
+            .content-header {
+                display: none;
+                /* Hide header on mobile/tablet */
+                position: sticky;
+                top: 0;
+                padding: 15px 5px;
+                margin-bottom: 20px;
+                border-bottom: 1px solid var(--border);
+                margin-top: -3rem;
+                background: var(--bg-main);
+                /* Add solid background */
+                z-index: 100;
+                /* Ensure it stays above content */
+                /* Pull up into the padding area */
+            }
+
+            .content-header.header-hidden {
+                transform: translateY(-100%);
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+
+        .content-header h1 {
+            color: var(--text-main);
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .content-header h1 i {
+            color: var(--primary);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            color: var(--text-main);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+
+        .card h2 i {
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: var(--bg-secondary);
+            color: var(--text-main);
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-card);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-danger {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+            padding: 5px 10px;
+        }
+
+        .btn-danger:hover {
+            background: rgba(231, 76, 60, 0.2);
+        }
+
+        /* Hero Card for Next Prayer - Premium Design */
+        .next-prayer-card {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            /* Default dynamic gradient */
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.5s ease;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .next-prayer-card.prayer-fajr {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        }
+
+        .next-prayer-card.prayer-dhuhr {
+            background: linear-gradient(135deg, #2980b9, #6dd5fa, #ffffff);
+            color: #2c3e50;
+        }
+
+        .next-prayer-card.prayer-asr {
+            background: linear-gradient(135deg, #f8b500, #fceabb);
+            color: #2c3e50;
+        }
+
+        .next-prayer-card.prayer-maghrib {
+            background: linear-gradient(135deg, #4b6cb7, #182848);
+        }
+
+        .next-prayer-card.prayer-isha {
+            background: linear-gradient(135deg, #000428, #004e92);
+        }
+
+        .next-prayer-card h3 {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+            opacity: 0.8;
+        }
+
+        .next-prayer-card h1 {
+            font-size: 4rem;
+            margin: 5px 0;
+            font-weight: 900;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+        }
+
+        .next-prayer-card p {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .countdown-badge {
+            margin-top: 25px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 12px 30px;
+            border-radius: 50px;
+            display: inline-block;
+            font-size: 1.1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+            }
+        }
+
+        .next-prayer-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Prayer List */
+        .prayer-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            transition: 0.2s;
+        }
+
+        .prayer-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .prayer-list-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .prayer-name {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .prayer-time {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-weight: 700;
+            color: var(--primary-dark);
+            background: linear-gradient(135deg, var(--primary-light), rgba(var(--primary-rgb), 0.2));
+            padding: 6px 14px;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+            font-size: 1.05rem;
+        }
+
+        .prayer-list-item.current-prayer {
+            background: rgba(var(--primary-rgb), 0.05);
+            border-right: 4px solid var(--primary);
+            box-shadow: inset 5px 0 15px rgba(var(--primary-rgb), 0.03);
+        }
+
+        .prayer-list-item.current-prayer .prayer-name {
+            color: var(--primary-dark);
+            font-weight: 800;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.toggle-slider {
+            background-color: var(--primary);
+        }
+
+        input:checked+.toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 15px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-info {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196F3;
+            border: 1px solid rgba(33, 150, 243, 0.2);
+        }
+
+        .alert-warning {
+            background: rgba(255, 152, 0, 0.1);
+            color: #F57C00;
+            border: 1px solid rgba(255, 152, 0, 0.2);
+        }
+
+        /* Recipient Item */
+        .recipient-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+        }
+
+        .recipient-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .recipient-icon {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+            font-size: 1.2rem;
+        }
+
+        .recipient-item:hover {
+            transform: translateX(-5px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Submenu Styles */
+        .submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: var(--radius-sm);
+        }
+
+        .submenu.open {
+            max-height: 500px;
+            /* Arbitrary large height */
+            transition: max-height 0.5s ease-in;
+        }
+
+        .submenu .admin-nav-item {
+            padding-right: 2.5rem;
+            /* Indent submenu items */
+            font-size: 0.9em;
+        }
+
+        .submenu-arrow {
+            margin-right: auto;
+            transition: transform 0.3s;
+            font-size: 0.8em;
+        }
+
+        .admin-nav-item.submenu-trigger.open .submenu-arrow {
+            transform: rotate(-180deg);
+        }
+
+        /* Glassmorphism for cards */
+        .card {
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            background: rgba(var(--bg-card-rgb), 0.9);
+            border: 1px solid rgba(var(--border-rgb), 0.5);
+        }
+
+        /* Mode Switcher Buttons */
+        .mode-btn {
+            flex: 1;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn-active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .mode-btn-inactive {
+            background: var(--bg-card);
+            color: var(--text-main);
+        }
+
+        .media-options {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- Horizontal Tabs Styles --- */
+        .nav-tabs-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            /* For scrollbar */
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-tab {
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            background: var(--bg-hover);
+            color: var(--text-main);
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.3);
+            border-color: var(--primary);
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Mobile Responsiveness --- */
+
+        /* Small Mobile (320px - 480px) */
+        @media (max-width: 480px) {
+            .admin-content {
+                padding: 4rem 0.75rem 1.5rem;
+            }
+
+            .nav-tab {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+                gap: 5px;
+            }
+
+            .nav-tab i {
+                font-size: 0.9rem;
+            }
+
+            .card {
+                padding: 12px;
+                margin-bottom: 15px;
+            }
+
+            .card h2 {
+                font-size: 1rem;
+                gap: 8px;
+            }
+
+            .prayer-list-item {
+                padding: 10px;
+                gap: 10px;
+            }
+
+            .form-control {
+                padding: 8px;
+                font-size: 0.9rem;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Mobile (481px - 768px) */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .nav-tab {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+
+            .card {
+                padding: 15px;
+            }
+        }
+
+        /* Tablet and below (max-width: 768px) */
+        @media (max-width: 768px) {
+            .nav-tabs-container {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+                padding-bottom: 0;
+                gap: 8px;
+            }
+
+            .nav-tabs-container::-webkit-scrollbar {
+                display: none;
+            }
+
+            /* Stack items in Adhkar list if needed */
+            .prayer-list-item {
+                flex-wrap: wrap;
+            }
+
+            /* Stack recipients actions */
+            .recipient-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .recipient-item>div:last-child {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 10px;
+                border-top: 1px solid var(--border);
+                padding-top: 10px;
+            }
+
+            /* Optimize next prayer card for mobile */
+            .next-prayer-card h1 {
+                font-size: 1.5rem;
+            }
+
+            .next-prayer-card h3 {
+                font-size: 1rem;
+            }
+        }
+
+        /* Tablet (769px - 1024px) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .admin-content {
+                padding: 3rem 1.5rem;
+            }
+
+            .nav-tab {
+                padding: 11px 18px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Toggle -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;">
+    </div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="admin-brand">
+                <div class="brand-header">
+                    <h2>
+                        <img src="/favicon.png" alt="واصل" style="width: 35px; height: 35px; border-radius: 8px;"
+                            onerror="this.style.display='none'">
+                        <span>واصل</span>
+                    </h2>
+                    <div style="display: flex; gap: 10px; align-items: center;" class="toolbar-btns">
+                        <button class="theme-toggle" onclick="toggleTheme()" title="تبديل الوضع الليلي">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        <button class="collapse-btn" onclick="collapseSidebar()" title="طي/فرد القائمة">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 8px;">مرحباً، <%= user.name %>
+                </p>
+            </div>
+
+            <nav class="admin-nav">
+                <% if (user.role==='admin' ) { %>
+                    <div class="admin-nav-item" onclick="window.location.href='/dashboard?tab=dashboard'">
+                        <i class="fas fa-chart-line"></i>
+                        <span class="nav-text">لوحة المعلومات</span>
+                    </div>
+                    <div class="admin-nav-item" onclick="window.location.href='/dashboard?tab=whatsapp'">
+                        <i class="fab fa-whatsapp"></i>
+                        <span class="nav-text">جلساتي</span>
+                    </div>
+                    <div class="admin-nav-item" onclick="window.location.href='/dashboard?tab=payments'">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span class="nav-text">طلبات التفعيل</span>
+                    </div>
+                    <div class="admin-nav-item" onclick="window.location.href='/dashboard?tab=users'">
+                        <i class="fas fa-users"></i>
+                        <span class="nav-text">إدارة المستخدمين</span>
+                    </div>
+                    <div class="admin-nav-item" onclick="window.location.href='/dashboard?tab=plans'">
+                        <i class="fas fa-box"></i>
+                        <span class="nav-text">إدارة الباقات</span>
+                    </div>
+                    <div class="admin-nav-item" onclick="window.location.href='/dashboard?tab=logs'">
+                        <i class="fas fa-history"></i>
+                        <span class="nav-text">سجل النشاط</span>
+                    </div>
+
+                    <!-- User Systems Submenu -->
+                    <div class="admin-nav-item submenu-trigger" onclick="window.toggleSubmenu('user-systems-submenu')"
+                        data-tooltip="أنظمة المستخدمين">
+                        <i class="fas fa-cubes"></i>
+                        <span class="nav-text">أنظمة المستخدمين</span>
+                        <i class="fas fa-chevron-down submenu-arrow"></i>
+                    </div>
+                    <div id="user-systems-submenu" class="submenu">
+                        <a href="/dashboard/islamic-reminders" class="admin-nav-item active">
+                            <i class="fas fa-mosque"></i> <span class="nav-text">التذكيرات الإسلامية</span>
+                        </a>
+                    </div>
+
+                    <div class="admin-nav-item" onclick="window.location.href='/dashboard/settings'">
+                        <i class="fas fa-cog"></i>
+                        <span class="nav-text">الإعدادات</span>
+                    </div>
+
+                    <% } else { %>
+                        <a href="/dashboard" class="admin-nav-item">
+                            <i class="fas fa-home"></i> <span class="nav-text">نظرة عامة</span>
+                        </a>
+                        <a href="/dashboard?tab=whatsapp" class="admin-nav-item">
+                            <i class="fab fa-whatsapp"></i> <span class="nav-text">جلسات واتساب</span>
+                        </a>
+                        <a href="/dashboard/islamic-reminders" class="admin-nav-item active">
+                            <i class="fas fa-mosque"></i> <span class="nav-text">التذكيرات الإسلامية</span>
+                        </a>
+                        <% } %>
+                            <a href="/logout" class="admin-nav-item" style="margin-top: 2rem; color: #f44336;">
+                                <i class="fas fa-sign-out-alt"></i> <span class="nav-text">تسجيل خروج</span>
+                            </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <header class="content-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <a href="/dashboard" class="btn btn-outline"
+                        style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                        <i class="fas fa-arrow-right"></i>
+                        <span class="back-btn-text">رجوع</span>
+                    </a>
+                    <h1><i class="fas fa-mosque"></i> نظام التذكيرات الإسلامية</h1>
+                </div>
+            </header>
+
+            <!-- Tabs Navigation -->
+            <div class="nav-tabs-container">
+                <button class="nav-tab" onclick="switchTab('tab-location')">
+                    <i class="fas fa-map-marker-alt"></i> الموقع
+                </button>
+                <button class="nav-tab active" onclick="switchTab('tab-prayers')">
+                    <i class="fas fa-mosque"></i> مواقيت الصلاة
+                </button>
+                <button class="nav-tab" onclick="switchTab('tab-adhkar')">
+                    <i class="fas fa-book-open"></i> الأذكار والمحتوى
+                </button>
+                <button class="nav-tab" onclick="switchTab('tab-recipients')">
+                    <i class="fas fa-users"></i> المستلمين والإتصال
+                </button>
+            </div>
+
+            <div class="tab-content-wrapper">
+                <!-- Tab: Prayers -->
+                <div id="tab-prayers" class="tab-pane active">
+                    <!-- Next Prayer Hero Card -->
+                    <% if (locals.nextPrayer) { %>
+                        <div class="card next-prayer-card">
+                            <h3>الصلاة القادمة</h3>
+                            <h1 id="next-prayer-name">
+                                <%= nextPrayer.nameAr %>
+                            </h1>
+                            <p id="next-prayer-time">
+                                <i class="far fa-clock"></i>
+                                <script>
+                                    (function () {
+                                        const time24 = '<%= nextPrayer.time %>';
+                                        const [hours, minutes] = time24.split(':');
+                                        const hour = parseInt(hours);
+                                        const period = hour >= 12 ? 'م' : 'ص';
+                                        const hour12 = hour % 12 || 12;
+                                        document.write(`${hour12}:${minutes} ${period}`);
+                                    })();
+                                </script>
+                                <% if (nextPrayer.isTomorrow) { %> (غداً) <% } %>
+                            </p>
+                            <div id="prayer-countdown" class="countdown-badge">
+                                جاري التحميل...
+                            </div>
+                            <!-- Qibla Hint -->
+                            <div id="qibla-hint"
+                                style="margin-top: 15px; font-size: 0.85rem; opacity: 0.7; font-weight: 500;">
+                                <i class="fas fa-compass"></i> اتجاه القبلة: <span id="qibla-degree">--</span>°
+                            </div>
+                        </div>
+                        <script>
+                            function updateCountdown() {
+                                const nextTimeStr = "<%= nextPrayer.time %>";
+                                const nextName = "<%= nextPrayer.name %>".toLowerCase();
+                                const isTomorrow = "<%= (locals.nextPrayer && nextPrayer.isTomorrow) ? '1' : '0' %>" === '1';
+                                const [hours, minutes] = nextTimeStr.split(':').map(Number);
+
+                                // Update Theme
+                                const card = document.querySelector('.next-prayer-card');
+                                if (card) {
+                                    card.className = 'card next-prayer-card prayer-' + nextName;
+                                }
+
+                                const now = new Date();
+                                let target = new Date();
+                                target.setHours(hours, minutes, 0, 0);
+
+                                if (isTomorrow) {
+                                    target.setDate(target.getDate() + 1);
+                                } else if (target < now) {
+                                    return;
+                                }
+
+                                const diff = target - now;
+                                if (diff <= 0) {
+                                    document.getElementById('prayer-countdown').innerText = "حان وقت الأذان";
+                                    return;
+                                }
+
+                                const h = Math.floor(diff / (1000 * 60 * 60));
+                                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                                const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                                // Arabic numerals for a touch of class? No, stick to global for clear readability
+                                document.getElementById('prayer-countdown').innerHTML =
+                                    `<i class="fas fa-hourglass-half"></i> متبقي: ` +
+                                    (h > 0 ? `<span>${h}</span> س ` : '') +
+                                    `<span>${m}</span> د <span>${s}</span> ث`;
+                            }
+
+                            setInterval(updateCountdown, 1000);
+                            updateCountdown();
+                        </script>
+                        <% } %>
+
+                            <!-- Prayer Times List -->
+                            <div class="card">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <h2 style="border: none; margin: 0; padding: 0;"><i class="fas fa-pray"></i> مواقيت
+                                        الصلاة</h2>
+                                    <% if (locals.prayerTimes) { %>
+                                        <span
+                                            style="background: var(--bg-secondary); color: var(--primary-dark); padding: 5px 10px; border-radius: 20px; font-size: 0.9rem;">
+                                            <i class="far fa-calendar-alt"></i>
+                                            <%= prayerTimes.hijri_date %>
+                                        </span>
+                                        <% } %>
+                                </div>
+
+                                <!-- Chic Prayer Mode Selector -->
+                                <style>
+                                    .btn-segment {
+                                        border: none;
+                                        background: transparent;
+                                        color: var(--text-muted);
+                                        padding: 6px 15px;
+                                        border-radius: 6px;
+                                        font-size: 0.85rem;
+                                        cursor: pointer;
+                                        font-weight: 600;
+                                        transition: all 0.3s;
+                                    }
+
+                                    .btn-segment:hover {
+                                        background: rgba(0, 0, 0, 0.05);
+                                    }
+
+                                    .btn-segment.active {
+                                        background: var(--primary-light) !important;
+                                        color: var(--primary) !important;
+                                    }
+
+                                    .prayer-mode-selector-container {
+                                        display: flex;
+                                        justify-content: space-between;
+                                        align-items: center;
+                                        background: var(--bg-secondary);
+                                        padding: 12px 20px;
+                                        border-radius: 12px;
+                                        margin-bottom: 25px;
+                                        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+                                    }
+
+                                    .prayer-mode-info {
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 10px;
+                                    }
+
+                                    .icon-circle-bg {
+                                        width: 40px;
+                                        height: 40px;
+                                        border-radius: 50%;
+                                        background: var(--bg-card);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+                                    }
+
+                                    .text-primary {
+                                        color: var(--primary);
+                                    }
+
+                                    .h4-no-margin-bold {
+                                        margin: 0;
+                                        font-size: 0.95rem;
+                                        font-weight: 700;
+                                    }
+
+                                    .text-muted-small {
+                                        color: var(--text-muted);
+                                        font-size: 0.8rem;
+                                    }
+
+                                    .segmented-control-styles {
+                                        display: flex;
+                                        background: var(--bg-card);
+                                        padding: 4px;
+                                        border-radius: 8px;
+                                        border: 1px solid var(--border);
+                                    }
+                                </style>
+                                <div class="prayer-mode-selector-container">
+                                    <div class="prayer-mode-info">
+                                        <div class="icon-circle-bg">
+                                            <i class="fas fa-clock text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="h4-no-margin-bold">نظام المواقيت
+                                            </h4>
+                                            <small class="text-muted-small" id="mode-desc">
+                                                <%= config.prayer_time_mode==='manual' ? 'إدخال يدوي مخصص'
+                                                    : 'تلقائي حسب الموقع الجغرافي' %>
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <div class="segmented-control segmented-control-styles">
+                                        <button onclick="setPrayerTimeMode('auto')"
+                                            class="btn-segment <%= config.prayer_time_mode !== 'manual' ? 'active' : '' %>">
+                                            📍 تلقائي
+                                        </button>
+                                        <button onclick="setPrayerTimeMode('manual')"
+                                            class="btn-segment <%= config.prayer_time_mode === 'manual' ? 'active' : '' %>">
+                                            ⌨️ يدوي
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Manual Prayer Times Input (REMOVED - Integrated into Settings Modal) -->
+                                <div id="manual-prayer-times-container" style="display: none;"></div>
+
+                                <% if (!locals.prayerTimes) { %>
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-map-marker-alt"></i> يرجى تحديد موقعك الجغرافي أولاً لعرض
+                                        مواقيت الصلاة.
+                                    </div>
+                                    <% } else { %>
+                                        <div class="prayer-list">
+                                            <% prayerSettings.forEach(prayer=> { %>
+                                                <% const time=prayerTimes[prayer.prayer_name.toLowerCase()]; const
+                                                    isActive=locals.nextPrayer &&
+                                                    nextPrayer.name.toLowerCase()===prayer.prayer_name.toLowerCase();
+                                                    const prayerNameAr={ 'fajr' : 'الفجر' , 'dhuhr' : 'الظهر' , 'asr'
+                                                    : 'العصر' , 'maghrib' : 'المغرب' , 'isha' : 'العشاء'
+                                                    }[prayer.prayer_name.toLowerCase()] || prayer.prayer_name; const
+                                                    prayerIcon={ 'fajr' : 'fa-cloud-sun' , 'dhuhr' : 'fa-sun' , 'asr'
+                                                    : 'fa-cloud-sun-open' , 'maghrib' : 'fa-sunset' , 'isha' : 'fa-moon'
+                                                    }[prayer.prayer_name.toLowerCase()] || 'fa-clock' ; %>
+                                                    <div
+                                                        class="prayer-list-item <%= isActive ? 'current-prayer' : '' %>">
+                                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                                            <i class="fas <%= prayerIcon %>"
+                                                                style="color: var(--primary); opacity: 0.6; width: 20px; text-align: center;"></i>
+                                                            <span class="prayer-name">
+                                                                <%= prayerNameAr %>
+                                                            </span>
+                                                            <% if (isActive) { %>
+                                                                <span
+                                                                    style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem;">الآن</span>
+                                                                <% } %>
+                                                        </div>
+                                                        <div style="display: flex; align-items: center; gap: 15px;">
+                                                            <span class="prayer-time">
+                                                                <script>
+                                                                    (function () {
+                                                                        const time24 = '<%= time %>';
+                                                                        const [hours, minutes] = time24.split(':');
+                                                                        const hour = parseInt(hours);
+                                                                        const period = hour >= 12 ? 'م' : 'ص';
+                                                                        const hour12 = hour % 12 || 12;
+                                                                        document.write(`${hour12}:${minutes} ${period}`);
+                                                                    })();
+                                                                </script>
+                                                            </span>
+                                                            <button
+                                                                onclick="openPrayerSettings('<%= prayer.id %>', '<%= prayer.prayer_name %>', '<%= prayer.reminder_before_minutes || 0 %>')"
+                                                                class="btn-icon" title="إعدادات التوقيت"
+                                                                style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 5px;">
+                                                                <i class="fas fa-cog"></i>
+                                                            </button>
+                                                            <label class="toggle-switch" title="تفعيل/تعطيل التذكير">
+                                                                <input type="checkbox"
+                                                                    onchange="togglePrayer('<%= prayer.id %>', this.checked)"
+                                                                    <%=prayer.enabled ? 'checked' : '' %>>
+                                                                <span class="toggle-slider"></span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <% }) %>
+                                        </div>
+                                        <% } %>
+                            </div>
+
+                </div> <!-- End Tab Prayers -->
+
+                <div id="tab-adhkar" class="tab-pane">
+
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+
+                        <!-- 1. Experience & Media Settings -->
+                        <!-- NEW: Instant Tools (Hadith & Content Integration) -->
+                        <div class="card">
+                            <h2><i class="fas fa-paper-plane"></i> أدوات النشر الفوري (Instant Tools)</h2>
+
+                            <!-- Content Selector Tabs -->
+                            <div class="tabs" style="margin-bottom: 20px; border-bottom: 2px solid var(--border);">
+                                <button onclick="switchContentTab('hadith')" id="tab-btn-hadith" class="tab-btn active"
+                                    style="flex:1;">
+                                    <i class="fas fa-book-open"></i> أحاديث نبوية
+                                </button>
+                                <button onclick="switchContentTab('adhkar-preview')" id="tab-btn-adhkar-preview"
+                                    class="tab-btn" style="flex:1;">
+                                    <i class="fas fa-praying-hands"></i> أذكار مختارة
+                                </button>
+                                <button onclick="switchContentTab('custom')" id="tab-btn-custom" class="tab-btn"
+                                    style="flex:1;">
+                                    <i class="fas fa-pen"></i> رسالة خاصة
+                                </button>
+                            </div>
+
+                            <!-- Hadith Section -->
+                            <div id="content-panel-hadith">
+                                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                    <select id="hadith-book-select" class="form-control" style="flex: 2;">
+                                        <option value="bukhari">صحيح البخاري</option>
+                                        <option value="muslim">صحيح مسلم</option>
+                                    </select>
+                                    <button onclick="fetchRandomHadith()" class="btn btn-secondary" style="flex: 1;">
+                                        <i class="fas fa-random"></i> حديث عشوائي
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Preview Box -->
+                            <div
+                                style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; border: 1px solid var(--border);">
+                                <label style="display:block; margin-bottom: 5px; color: var(--text-muted);">معاينة
+                                    المحتوى:</label>
+                                <textarea id="preview-text" class="form-control" rows="6" readonly
+                                    style="background: var(--bg-main); color: var(--text-main); font-family: 'Amiri', serif; font-size: 1.1rem; line-height: 1.8;"></textarea>
+
+                                <div style="display: flex; gap: 10px; margin-top: 10px; align-items: center;">
+                                    <label style="color: var(--text-muted); white-space: nowrap;">المصدر:</label>
+                                    <input type="text" id="preview-source" class="form-control" readonly
+                                        style="background: var(--bg-main); font-weight: bold; color: var(--primary);">
+                                </div>
+                            </div>
+
+                            <!-- Send Actions -->
+                            <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                                <button onclick="sendInstantMessage()" class="btn btn-primary"
+                                    style="min-width: 150px;">
+                                    <i class="fab fa-whatsapp"></i> إرسال الآن
+                                </button>
+                            </div>
+
+                        </div>
+                        <div class="card">
+
+                            <h2><i class="fas fa-sliders-h"></i> إعدادات العرض والوسائط</h2>
+
+                            <!-- Experience Mode -->
+                            <div
+                                style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                                <h4 style="margin: 0 0 10px 0;">نمط التجربة المفضل:</h4>
+                                <input type="hidden" id="experience_mode_input"
+                                    value="<%= adhkarSettings.morning_source === 'manual' ? 'manual' : 'auto' %>">
+                                <div style="display: flex; gap: 10px;">
+                                    <button onclick="setExperienceModeUI('manual')" id="btn-mode-manual"
+                                        class="btn mode-btn <%= adhkarSettings.morning_source === 'manual' ? 'mode-btn-active' : 'mode-btn-inactive' %>">
+                                        📖 وضع القراءة (نص كامل)
+                                    </button>
+                                    <button onclick="setExperienceModeUI('auto')" id="btn-mode-auto"
+                                        class="btn mode-btn <%= adhkarSettings.morning_source !== 'manual' ? 'mode-btn-active' : 'mode-btn-inactive' %>">
+                                        🖼️ وضع المشاهدة (صور/فيديو)
+                                    </button>
+                                </div>
+                                <small
+                                    style="color: var(--text-muted); display: block; margin-top: 10px; font-size: 0.9rem;">
+                                    يحدد هذا الإعداد طريقة عرض أذكار الصباح، المساء، وحديث اليوم.
+                                </small>
+                            </div>
+
+                            <!-- Text Length Preference -->
+                            <div
+                                style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                                <h4 style="margin: 0 0 10px 0;">طول نص الأذكار:</h4>
+                                <div style="display: flex; gap: 10px;">
+                                    <label
+                                        style="flex: 1; cursor: pointer; background: var(--bg-main); padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px;">
+                                        <input type="radio" name="text_length" value="full"
+                                            <%=(!adhkarSettings.text_length || adhkarSettings.text_length==='full' )
+                                            ? 'checked' : '' %>>
+                                        <span>📜 نص كامل</span>
+                                    </label>
+                                    <label
+                                        style="flex: 1; cursor: pointer; background: var(--bg-main); padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px;">
+                                        <input type="radio" name="text_length" value="short"
+                                            <%=adhkarSettings.text_length==='short' ? 'checked' : '' %>>
+                                        <span>📝 نص مختصر (مقتطفات)</span>
+                                    </label>
+                                </div>
+                                <small
+                                    style="color: var(--text-muted); display: block; margin-top: 10px; font-size: 0.9rem;">
+                                    "نص كامل" يرسل جميع الأذكار. "نص مختصر" يرسل 3 أذكار مختارة عشوائياً للتخفيف.
+                                </small>
+                            </div>
+
+                            <!-- Media Preference (Visual Mode Only) -->
+                            <div id="media-pref-container"
+                                class="media-options <%= adhkarSettings.morning_source !== 'manual' ? '' : 'hidden' %>"
+                                style="border:none; margin:0; padding:0;">
+                                <h4 style="margin:0 0 8px 0; font-size:1rem;">نوع الوسائط للأذكار 🎨</h4>
+                                <div style="display: flex; gap: 10px;">
+                                    <label
+                                        style="flex: 1; cursor: pointer; background: var(--bg-main); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                                        <input type="radio" name="media_pref" value="image"
+                                            <%=adhkarSettings.media_preference==='image' ? 'checked' : '' %>> صور فقط
+                                        🖼️
+                                    </label>
+                                    <label
+                                        style="flex: 1; cursor: pointer; background: var(--bg-main); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                                        <input type="radio" name="media_pref" value="video"
+                                            <%=adhkarSettings.media_preference==='video' ? 'checked' : '' %>> فيديو فقط
+                                        🎬
+                                    </label>
+                                    <label
+                                        style="flex: 1; cursor: pointer; background: var(--bg-main); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                                        <input type="radio" name="media_pref" value="mixed"
+                                            <%=(adhkarSettings.media_preference==='mixed' ||
+                                            !adhkarSettings.media_preference) ? 'checked' : '' %>> كوكتيل 🔀
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Daily Reminders -->
+                        <div class="card">
+                            <h2><i class="fas fa-clock"></i> التذكيرات اليومية</h2>
+
+                            <!-- Morning -->
+                            <div class="prayer-list-item">
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div
+                                        style="background: rgba(255, 193, 7, 0.1); color: #FFC107; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-sun"></i>
+                                    </div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 1rem;">أذكار الصباح</h4>
+                                        <input type="time" class="form-control" id="morning_time"
+                                            style="width:110px; padding:5px; margin-top: 5px;"
+                                            value="<%= adhkarSettings.morning_time || '07:00' %>">
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="morning_enabled" <%=adhkarSettings.morning_enabled
+                                        ? 'checked' : '' %>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <!-- Evening -->
+                            <div class="prayer-list-item">
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div
+                                        style="background: rgba(63, 81, 181, 0.1); color: #3F51B5; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-moon"></i>
+                                    </div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 1rem;">أذكار المساء</h4>
+                                        <input type="time" class="form-control" id="evening_time"
+                                            style="width:110px; padding:5px; margin-top: 5px;"
+                                            value="<%= adhkarSettings.evening_time || '17:00' %>">
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="evening_enabled" <%=adhkarSettings.evening_enabled
+                                        ? 'checked' : '' %>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <!-- Hadith -->
+                            <div class="prayer-list-item">
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div
+                                        style="background: rgba(76, 175, 80, 0.1); color: #4CAF50; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 1rem;">حديث اليوم</h4>
+                                        <input type="time" class="form-control" id="hadith_time"
+                                            style="width:110px; padding:5px; margin-top: 5px;"
+                                            value="<%= adhkarSettings.hadith_time || '12:00' %>">
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="hadith_enabled" <%=adhkarSettings.hadith_enabled
+                                        ? 'checked' : '' %>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 3. Islamic Variety (Extra Content) -->
+                        <div class="card">
+                            <h2><i class="fas fa-photo-video"></i> منوعات إسلامية (إضافي)</h2>
+                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">
+                                رسالة يومية إضافية تحتوي على صور أو مقاطع فيديو إسلامية منوعة (خارج الأذكار المعتادة).
+                            </p>
+                            <div class="prayer-list-item">
+                                <div>
+                                    <div style="display:flex; gap:10px; align-items:center; flex-wrap: wrap;">
+                                        <div style="display: flex; align-items: center; gap: 5px;">
+                                            <i class="far fa-clock"></i>
+                                            <input type="time" class="form-control" id="content_time"
+                                                style="width:110px; padding:5px;"
+                                                value="<%= adhkarSettings.content_time || '21:00' %>">
+                                        </div>
+
+                                        <select class="form-control" id="content_type" style="width:auto; padding:5px;">
+                                            <option value="mixed" <%=(adhkarSettings.content_type==='mixed'
+                                                ||!adhkarSettings.content_type) ? 'selected' : '' %>>كوكتيل 🔀</option>
+                                            <option value="image" <%=adhkarSettings.content_type==='image' ? 'selected'
+                                                : '' %>>صور فقط 🖼️</option>
+                                            <option value="video" <%=adhkarSettings.content_type==='video' ? 'selected'
+                                                : '' %>>فيديو فقط 🎬</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="content_enabled" <%=adhkarSettings.content_enabled
+                                        ? 'checked' : '' %>>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 4. Fasting Reminders -->
+                        <div class="card">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h2 style="border: none; margin: 0; padding: 0;"><i class="fas fa-moon"></i> تذكيرات
+                                    الصيام</h2>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <small style="color: var(--text-muted);">وقت التنبيه:</small>
+                                    <input type="time" class="form-control" id="fasting_reminder_time"
+                                        style="width:100px; padding:4px;"
+                                        value="<%= fastingSettings.reminder_time || '20:00' %>">
+                                </div>
+                            </div>
+
+                            <div
+                                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                                <% const fastingTypes=[ { id: 'monday_thursday' , label: 'الإثنين والخميس' }, {
+                                    id: 'white_days' , label: 'الأيام البيض' }, { id: 'ashura' , label: 'عاشوراء' }, {
+                                    id: 'ramadan_alerts' , label: 'تنبيهات رمضان' } ]; %>
+                                    <% fastingTypes.forEach(type=> { %>
+                                        <div class="prayer-list-item"
+                                            style="flex-direction: column; align-items: flex-start; gap: 10px;">
+                                            <div
+                                                style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+                                                <h4 style="margin: 0; font-size: 0.95rem;">
+                                                    <%= type.label %>
+                                                </h4>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="fasting_<%= type.id %>"
+                                                        <%=(locals.fastingSettings && locals.fastingSettings[type.id])
+                                                        ? 'checked' : '' %>>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <% }) %>
+                            </div>
+                        </div>
+
+                        <!-- 5. Dua -->
+                        <div class="card"
+                            style="background: linear-gradient(rgba(var(--primary-rgb), 0.1), transparent); border-right: 4px solid var(--primary);">
+                            <h2 style="border: none; margin-bottom: 12px; font-size: 1.1rem;"><i
+                                    class="fas fa-quote-right" style="color: var(--primary);"></i> دعاء اليوم</h2>
+                            <p id="daily-dua"
+                                style="font-style: italic; color: var(--text-main); line-height: 1.8; font-size: 1rem; margin-bottom: 0; font-weight: 500;">
+                                "اللهم إني أسألك علماً نافعاً، ورزقاً طيباً، وعملاً متقبلاً"
+                            </p>
+                        </div>
+
+                        <!-- Main Save Button for Adhkar Tab -->
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button onclick="saveAdhkarTabSettings()" class="btn btn-primary"
+                                style="padding: 12px 30px; font-size: 1.1rem; width: 100%; max-width: 300px;">
+                                <i class="fas fa-save"></i> حفظ جميع الإعدادات
+                            </button>
+                        </div>
+                    </div>
+                </div> <!-- End Tab Adhkar -->
+
+                <!-- Tab: Location & Session -->
+                <div id="tab-location" class="tab-pane">
+                    <!-- Session Selector -->
+                    <div class="card">
+                        <h2><i class="fab fa-whatsapp"></i> ربط الجلسة</h2>
+                        <% if (sessions.length===0) { %>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                لا توجد جلسات واتساب متصلة. يرجى إنشاء جلسة جديدة أولاً.
+                            </div>
+                            <a href="/dashboard?tab=whatsapp" class="btn btn-primary" style="width: 100%;">
+                                <i class="fas fa-plus"></i> إدارة الجلسات
+                            </a>
+                            <% } else { %>
+                                <div class="form-group">
+                                    <label>اختر الجلسة للإرسال عبرها:</label>
+                                    <select id="sessionSelect" class="form-control" onchange="linkSession()">
+                                        <option value="">-- اختر جلسة --</option>
+                                        <% sessions.forEach(session=> { %>
+                                            <option value="<%= session.session_id %>"
+                                                <%=config.session_id===session.session_id ? 'selected' : '' %>>
+                                                <%= session.name || session.phone_number || session.session_id %>
+                                                    <%= session.connected ? '✅' : '⚠️' %>
+                                            </option>
+                                            <% }) %>
+                                    </select>
+                                </div>
+
+                                <% if (config.session_id) { %>
+                                    <div class="alert alert-info"
+                                        style="display: flex; flex-direction: column; gap: 10px;">
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span><i class="fas fa-check-circle"></i> متصل</span>
+                                            <button onclick="sendTestNotification()" class="btn btn-outline"
+                                                style="padding: 2px 10px; font-size: 0.7rem; opacity: 0.8;">
+                                                اختبار الكل
+                                            </button>
+                                        </div>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                            <button onclick="testIndividuals()" class="btn btn-primary"
+                                                style="padding: 5px; font-size: 0.8rem; border-radius: 8px;">
+                                                <i class="fas fa-user"></i> اختبار الأفراد
+                                            </button>
+                                            <button onclick="testGroups()" class="btn btn-primary"
+                                                style="padding: 5px; font-size: 0.8rem; border-radius: 8px; background: #673ab7;">
+                                                <i class="fas fa-users"></i> اختبار المجموعات
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <% } %>
+                                        <% } %>
+                    </div>
+
+                    <!-- Location Settings -->
+                    <div class="card">
+                        <h2><i class="fas fa-map-marker-alt"></i> الموقع الجغرافي</h2>
+                        <div class="form-group">
+                            <label>الدولة:</label>
+                            <select id="country" class="form-control" onchange="updateGovernorates()">
+                                <option value="">-- اختر الدولة --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>المحافظة:</label>
+                            <select id="governorate" class="form-control" onchange="updateCities()" disabled>
+                                <option value="">-- اختر المحافظة --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>المدينة:</label>
+                            <select id="city" class="form-control" onchange="updateCoordinates()" disabled>
+                                <option value="">-- اختر المدينة --</option>
+                            </select>
+                        </div>
+
+                        <div
+                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; opacity: 0.6; margin-bottom: 15px;">
+                            <div>
+                                <label style="font-size: 0.8rem;">خط العرض:</label>
+                                <input type="number" step="0.0001" id="latitude" class="form-control"
+                                    value="<%= config.latitude || '' %>" readonly
+                                    style="font-size: 0.8rem; padding: 8px;">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.8rem;">خط الطول:</label>
+                                <input type="number" step="0.0001" id="longitude" class="form-control"
+                                    value="<%= config.longitude || '' %>" readonly
+                                    style="font-size: 0.8rem; padding: 8px;">
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="saveLocation()" class="btn btn-primary" style="flex: 1;">
+                                <i class="fas fa-save"></i> حفظ
+                            </button>
+                            <button onclick="locateMe()" class="btn btn-outline" style="flex: 1;">
+                                <i class="fas fa-crosshairs"></i> تلقائي
+                            </button>
+                        </div>
+                    </div>
+                </div> <!-- End Tab Location -->
+
+                <!-- Tab: Recipients -->
+                <div id="tab-recipients" class="tab-pane">
+
+                    <!-- Recipients -->
+                    <div class="card">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+                            <h2 style="border: none; margin: 0; padding: 0; font-size: 1.2rem;"><i
+                                    class="fas fa-users"></i> المستلمون</h2>
+                            <button onclick="showAddRecipientModal()" class="btn btn-primary"
+                                style="padding: 5px 10px; font-size: 0.9rem;">
+                                <i class="fas fa-plus"></i> إضافة
+                            </button>
+                        </div>
+
+                        <% if (recipients.length===0) { %>
+                            <p style="color: var(--text-muted); text-align: center; font-size: 0.9rem;">
+                                لا يوجد مستلمون. سيتم الإرسال لرقمك الافتراضي.
+                            </p>
+                            <% } else { %>
+                                <div style="max-height: 300px; overflow-y: auto;">
+                                    <% recipients.forEach(recipient=> { %>
+                                        <div class="recipient-item">
+                                            <div class="recipient-info">
+                                                <div class="recipient-icon">
+                                                    <% if (recipient.type==='group' ) { %>
+                                                        <i class="fas fa-users"></i>
+                                                        <% } else { %>
+                                                            <i class="fas fa-user"></i>
+                                                            <% } %>
+                                                </div>
+                                                <div>
+                                                    <div style="font-weight: bold;">
+                                                        <%= recipient.name %>
+                                                    </div>
+                                                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                                        <%= recipient.whatsapp_id %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <button onclick="testRecipient('<%= recipient.id %>')" class="btn-icon"
+                                                    title="اختبار"
+                                                    style="background: none; border: none; cursor: pointer; color: var(--primary); font-size: 0.9rem;">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </button>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox"
+                                                        onchange="toggleRecipient('<%= recipient.id %>', this.checked)"
+                                                        <%=recipient.enabled ? 'checked' : '' %>>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <button onclick="deleteRecipient('<%= recipient.id %>')"
+                                                    class="btn-danger"
+                                                    style="background: none; border: none; cursor: pointer; color: var(--danger);">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <% }) %>
+                                </div>
+                                <% } %>
+                    </div>
+                </div> <!-- End Tab Recipients -->
+            </div> <!-- End Tab Wrapper -->
+        </main>
+    </div>
+
+    <!-- Add Recipient Modal -->
+    <div id="addRecipientModal"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+        <div
+            style="background: var(--bg-card); padding: 30px; border-radius: var(--radius-md); width: 90%; max-width: 500px; box-shadow: var(--shadow-lg);">
+            <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--text-main);">إضافة مستلم جديد</h3>
+
+            <div class="form-group">
+                <label>نوع المستلم:</label>
+                <select id="recipientType" class="form-control" onchange="updateRecipientInputs()">
+                    <option value="individual">فرد (رقم هاتف)</option>
+                    <option value="group">مجموعة</option>
+                    <option value="all">الإرسال للكل</option>
+                </select>
+            </div>
+
+            <!-- Individual Inputs -->
+            <div id="individualInputs">
+                <div class="form-group">
+                    <label>الاسم:</label>
+                    <input type="text" id="individualName" class="form-control" placeholder="مثال: أحمد">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف:</label>
+                    <input type="text" id="individualPhone" class="form-control" placeholder="201xxxxxxxxx">
+                    <small style="color: var(--text-muted);">أدخل الرقم مع كود الدولة بدون +</small>
+                </div>
+            </div>
+
+            <!-- Group Inputs -->
+            <div id="groupInputs" style="display: none;">
+                <div class="form-group">
+                    <label>اختر من المجموعات:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="availableGroups" class="form-control" onchange="selectGroup()">
+                            <option value="">-- اختر مجموعة --</option>
+                        </select>
+                        <button onclick="fetchGroups()" class="btn btn-primary" style="padding: 0 15px;">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>اسم المجموعة:</label>
+                    <input type="text" id="groupName" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>معرف المجموعة:</label>
+                    <input type="text" id="groupJid" class="form-control">
+                </div>
+            </div>
+
+            <!-- All Contacts -->
+            <div id="allInputs" style="display: none;">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    سيتم الإرسال لجميع جهات الاتصال
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button onclick="closeAddRecipientModal()" class="btn btn-outline">إلغاء</button>
+                <button onclick="saveRecipient()" class="btn btn-primary">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Scripts -->
+    <script>
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Hide all panes
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            // Deactivate all buttons
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+            // Activate target
+            document.getElementById(tabId).classList.add('active');
+            const btn = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
+            if (btn) btn.classList.add('active');
+
+            // Save preference (Optional)
+            localStorage.setItem('islamic_tab', tabId);
+        }
+
+        // Sidebar & Theme Logic
+        function toggleSidebar() {
+            document.getElementById('adminSidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').style.display =
+                document.getElementById('adminSidebar').classList.contains('open') ? 'block' : 'none';
+        }
+
+        function collapseSidebar() {
+            document.getElementById('adminSidebar').classList.toggle('collapsed');
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            updateThemeIcon(next);
+        }
+
+        function updateThemeIcon(theme) {
+            document.querySelectorAll('.theme-toggle i').forEach(icon => {
+                icon.classList.remove('fa-moon', 'fa-sun');
+                icon.classList.add(theme === 'dark' ? 'fa-sun' : 'fa-moon');
+            });
+        }
+
+        // Initialize Theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+
+        // Islamic Reminders Logic
+        const LOCATION_DATA = {
+            "Egypt": {
+                "القاهرة": {
+                    "القاهرة": { lat: 30.0444, lng: 31.2357 },
+                    "مدينة نصر": { lat: 30.0561, lng: 31.3301 },
+                    "المعادي": { lat: 29.9593, lng: 31.2580 },
+                    "مصر الجديدة": { lat: 30.0898, lng: 31.3283 },
+                    "التجمع الخامس": { lat: 30.0279, lng: 31.4795 },
+                    "الرحاب": { lat: 30.0601, lng: 31.4925 }
+                },
+                "الجيزة": {
+                    "الجيزة": { lat: 30.0131, lng: 31.2089 },
+                    "6 أكتوبر": { lat: 29.9722, lng: 30.9575 },
+                    "الشيخ زايد": { lat: 30.0401, lng: 30.9850 },
+                    "الهرم": { lat: 29.9961, lng: 31.1309 },
+                    "فيصل": { lat: 30.0075, lng: 31.1444 },
+                    "الدقي": { lat: 30.0392, lng: 31.2093 }
+                },
+                "الإسكندرية": {
+                    "الإسكندرية": { lat: 31.2001, lng: 29.9187 },
+                    "برج العرب": { lat: 30.8524, lng: 29.6974 },
+                    "العجمي": { lat: 31.1189, lng: 29.7719 }
+                },
+                "القليوبية": {
+                    "بنها": { lat: 30.4623, lng: 31.1786 },
+                    "قليوب": { lat: 30.1782, lng: 31.2081 },
+                    "شبرا الخيمة": { lat: 30.1256, lng: 31.2422 }
+                },
+                "الغربية": {
+                    "طنطا": { lat: 30.7865, lng: 31.0004 },
+                    "المحلة الكبرى": { lat: 30.9686, lng: 31.1648 }
+                },
+                "الدقهلية": {
+                    "المنصورة": { lat: 31.0409, lng: 31.3785 },
+                    "ميت غمر": { lat: 30.7169, lng: 31.2682 }
+                },
+                "الشرقية": {
+                    "الزقازيق": { lat: 30.5877, lng: 31.5020 },
+                    "العاشر من رمضان": { lat: 30.3015, lng: 31.7431 }
+                },
+                "المنوفية": {
+                    "شبين الكوم": { lat: 30.5562, lng: 31.0088 },
+                    "منوف": { lat: 30.4682, lng: 30.9329 }
+                },
+                "البحيرة": {
+                    "دمنهور": { lat: 31.0371, lng: 30.4735 },
+                    "كفر الدوار": { lat: 31.1341, lng: 30.1293 }
+                },
+                "كفر الشيخ": {
+                    "كفر الشيخ": { lat: 31.1077, lng: 30.9422 },
+                    "دسوق": { lat: 31.1332, lng: 30.6475 }
+                },
+                "بورسعيد": {
+                    "بورسعيد": { lat: 31.2653, lng: 32.3020 },
+                    "بورفؤاد": { lat: 31.2500, lng: 32.3216 }
+                },
+                "الإسماعيلية": {
+                    "الإسماعيلية": { lat: 30.5965, lng: 32.2715 },
+                    "فايد": { lat: 30.3292, lng: 32.3027 }
+                },
+                "السويس": { "السويس": { lat: 29.9668, lng: 32.5498 } },
+                "دمياط": {
+                    "دمياط": { lat: 31.4175, lng: 31.8144 },
+                    "رأس البر": { lat: 31.5138, lng: 31.8159 }
+                },
+                "الفيوم": { "الفيوم": { lat: 29.3084, lng: 30.8428 } },
+                "بني سويف": { "بني سويف": { lat: 29.0661, lng: 31.0994 } },
+                "المنيا": { "المنيا": { lat: 28.1130, lng: 30.7505 } },
+                "أسيوط": { "أسيوط": { lat: 27.1783, lng: 31.1859 } },
+                "سوهاج": { "سوهاج": { lat: 26.5590, lng: 31.6957 } },
+                "قنا": { "قنا": { lat: 26.1524, lng: 32.7212 } },
+                "الأقصر": { "الأقصر": { lat: 25.6872, lng: 32.6396 } },
+                "أسوان": { "أسوان": { lat: 24.0889, lng: 32.8998 } },
+                "البحر الأحمر": {
+                    "الغردقة": { lat: 27.2579, lng: 33.8116 },
+                    "سفاجا": { lat: 26.7460, lng: 33.9350 }
+                },
+                "جنوب سيناء": {
+                    "شرم الشيخ": { lat: 27.9158, lng: 34.3299 },
+                    "دهب": { lat: 28.5096, lng: 34.5135 }
+                },
+                "شمال سيناء": { "العريش": { lat: 31.1321, lng: 33.8033 } },
+                "مطروح": { "مرسى مطروح": { lat: 31.3543, lng: 27.2373 } },
+                "الوادي الجديد": { "الخارجة": { lat: 25.4390, lng: 30.5586 } }
+            },
+            "Saudi Arabia": {
+                "الرياض": { "الرياض": { lat: 24.7136, lng: 46.6753 } },
+                "مكة المكرمة": {
+                    "مكة المكرمة": { lat: 21.3891, lng: 39.8579 },
+                    "جدة": { lat: 21.4858, lng: 39.1925 },
+                    "الطائف": { lat: 21.2854, lng: 40.4222 }
+                },
+                "المدينة المنورة": { "المدينة المنورة": { lat: 24.5247, lng: 39.5692 } },
+                "الشرقية": {
+                    "الدمام": { lat: 26.4207, lng: 50.0888 },
+                    "الخبر": { lat: 26.2172, lng: 50.1971 },
+                    "الهفوف": { lat: 25.3642, lng: 49.5630 }
+                }
+            },
+            "UAE": {
+                "دبي": { "دبي": { lat: 25.2048, lng: 55.2708 } },
+                "أبو ظبي": {
+                    "أبو ظبي": { lat: 24.4539, lng: 54.3773 },
+                    "العين": { lat: 24.1302, lng: 55.8023 }
+                },
+                "الشارقة": { "الشارقة": { lat: 25.3463, lng: 55.4209 } }
+            },
+            "Slovakia": {
+                "Bratislava (العاصمة)": { "Bratislava": { lat: 48.1485, lng: 17.1077 } },
+                "Košice": { "Košice": { lat: 48.7164, lng: 21.2611 } },
+                "Prešov": { "Prešov": { lat: 48.9984, lng: 21.2393 } },
+                "Žilina": { "Žilina": { lat: 49.2232, lng: 18.7394 } },
+                "Nitra": { "Nitra": { lat: 48.3061, lng: 18.0764 } }
+            }
+        };
+
+        function populateCountries() {
+            const countrySelect = document.getElementById('country');
+            const countries = Object.keys(LOCATION_DATA);
+            countrySelect.innerHTML = '<option value="">-- اختر الدولة --</option>';
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                if (country === 'Slovakia') {
+                    option.textContent = 'سلوفاكيا (خاص لك 💖)';
+                    option.style.fontWeight = 'bold';
+                    option.style.color = 'var(--primary)';
+                } else {
+                    option.textContent = country === 'Egypt' ? 'مصر' :
+                        country === 'Saudi Arabia' ? 'السعودية' :
+                            country === 'UAE' ? 'الإمارات' : country;
+                }
+                countrySelect.appendChild(option);
+            });
+        }
+
+        function updateGovernorates() {
+            const country = document.getElementById('country').value;
+            const govSelect = document.getElementById('governorate');
+            const citySelect = document.getElementById('city');
+            govSelect.innerHTML = '<option value="">-- اختر المحافظة --</option>';
+            citySelect.innerHTML = '<option value="">-- اختر المدينة --</option>';
+            citySelect.disabled = true;
+
+            if (country && LOCATION_DATA[country]) {
+                govSelect.disabled = false;
+                Object.keys(LOCATION_DATA[country]).forEach(gov => {
+                    const option = document.createElement('option');
+                    option.value = gov;
+                    option.textContent = gov;
+                    govSelect.appendChild(option);
+                });
+            } else {
+                govSelect.disabled = true;
+            }
+        }
+
+        function updateCities() {
+            const country = document.getElementById('country').value;
+            const gov = document.getElementById('governorate').value;
+            const citySelect = document.getElementById('city');
+            citySelect.innerHTML = '<option value="">-- اختر المدينة --</option>';
+
+            if (country && gov && LOCATION_DATA[country][gov]) {
+                citySelect.disabled = false;
+                const cities = LOCATION_DATA[country][gov];
+                Object.keys(cities).forEach(cityName => {
+                    const cityData = cities[cityName];
+                    const option = document.createElement('option');
+                    option.value = cityName;
+                    option.textContent = cityName;
+                    option.dataset.lat = cityData.lat;
+                    option.dataset.lng = cityData.lng;
+                    citySelect.appendChild(option);
+                });
+            } else {
+                citySelect.disabled = true;
+            }
+        }
+
+        function updateCoordinates() {
+            const citySelect = document.getElementById('city');
+            const selectedOption = citySelect.options[citySelect.selectedIndex];
+            if (selectedOption && selectedOption.dataset.lat) {
+                document.getElementById('latitude').value = selectedOption.dataset.lat;
+                document.getElementById('longitude').value = selectedOption.dataset.lng;
+            }
+        }
+
+        function locateMe() {
+            if (navigator.geolocation) {
+                const btn = document.querySelector('button[onclick="locateMe()"]');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                btn.disabled = true;
+
+                navigator.geolocation.getCurrentPosition(position => {
+                    document.getElementById('latitude').value = position.coords.latitude.toFixed(4);
+                    document.getElementById('longitude').value = position.coords.longitude.toFixed(4);
+                    alert("✅ تم تحديد موقعك الحالي بنجاح! يرجى حفظ الإعدادات.");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, error => {
+                    console.error("Error getting location:", error);
+                    alert("❌ تعذر تحديد الموقع. يرجى التأكد من تفعيل خدمة الموقع.");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+            } else {
+                alert("❌ المستعرض الخاص بك لا يدعم تحديد الموقع الجغرافي.");
+            }
+        }
+
+        async function saveLocation() {
+            const country = document.getElementById('country').value;
+            const city = document.getElementById('city').value;
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lng = parseFloat(document.getElementById('longitude').value);
+            let timezone = 'Africa/Cairo';
+            let calculationMethod = 'Egypt';
+
+            if (country === 'Saudi Arabia') {
+                timezone = 'Asia/Riyadh';
+                calculationMethod = 'Makkah';
+            } else if (country === 'UAE') {
+                timezone = 'Asia/Dubai';
+                calculationMethod = 'MWL';
+            } else if (country === 'Slovakia') {
+                timezone = 'Europe/Bratislava';
+                calculationMethod = 'MWL';
+            }
+
+            const locationData = { country, city, latitude: lat, longitude: lng, timezone, prayer_calculation_method: calculationMethod };
+
+            if (!country || !city || !lat || !lng) {
+                alert('⚠️ يرجى اختيار الدولة والمحافظة والمدينة');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/islamic-reminders/location', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(locationData)
+                });
+                if (res.ok) {
+                    alert('✅ تم حفظ الموقع! جاري تحديث المواقيت...');
+                    location.reload();
+                } else {
+                    alert('❌ فشل حفظ الموقع');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ خطأ في الاتصال');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateCountries();
+            const savedCountry = "<%= config.location_country || 'Egypt' %>";
+            const savedCity = "<%= config.location_city || '' %>";
+
+            if (savedCountry) {
+                const countrySelect = document.getElementById('country');
+                countrySelect.value = savedCountry;
+                updateGovernorates();
+                if (savedCity) {
+                    const countryData = LOCATION_DATA[savedCountry];
+                    if (countryData) {
+                        for (const [gov, cities] of Object.entries(countryData)) {
+                            if (cities[savedCity]) {
+                                document.getElementById('governorate').value = gov;
+                                updateCities();
+                                document.getElementById('city').value = savedCity;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            const sessionSelect = document.getElementById('sessionSelect');
+            if (sessionSelect && sessionSelect.options.length === 2 && sessionSelect.value === "") {
+                sessionSelect.value = sessionSelect.options[1].value;
+                linkSession();
+            }
+
+            // Dynamic Dua Feature
+            const duas = [
+                "اللهم إني أسألك علماً نافعاً، ورزقاً طيباً، وعملاً متقبلاً",
+                "يا مقلب القلوب ثبت قلبي على دينك",
+                "اللهم إنك عفو كريم تحب العفو فاعفُ عني",
+                "سبحان الله وبحمده، سبحان الله العظيم",
+                "اللهم صلِ وسلم على نبينا محمد",
+                "ربنا آتنا في الدنيا حسنة وفي الآخرة حسنة وقنا عذاب النار",
+                "اللهم إني أعوذ بك من الهم والحزن، والعجز والكسل"
+            ];
+            const duaElem = document.getElementById('daily-dua');
+            if (duaElem) {
+                const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+                duaElem.innerText = `"${duas[dayOfYear % duas.length]}"`;
+            }
+
+            // Qibla Hint Update
+            const qiblaData = { 'Egypt': 135, 'Saudi Arabia': 255, 'UAE': 260, 'Slovakia': 145 };
+            const currentCountry = "<%= config.location_country || '' %>";
+            const qiblaDegreeElem = document.getElementById('qibla-degree');
+            if (qiblaDegreeElem && currentCountry && qiblaData[currentCountry]) {
+                qiblaDegreeElem.innerText = qiblaData[currentCountry];
+            }
+        });
+
+        // Recipients Logic
+        function updateRecipientInputs() {
+            const type = document.getElementById('recipientType').value;
+            document.getElementById('individualInputs').style.display = type === 'individual' ? 'block' : 'none';
+            document.getElementById('groupInputs').style.display = type === 'group' ? 'block' : 'none';
+            document.getElementById('allInputs').style.display = type === 'all' ? 'block' : 'none';
+        }
+
+        async function fetchGroups() {
+            const sessionId = document.getElementById('sessionSelect')?.value;
+            if (!sessionId) { alert('يرجى ربط جلسة واتساب أولاً'); return; }
+            try {
+                const response = await fetch(`/api/whatsapp/groups/${sessionId}`);
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    alert('❌ فشل تحميل المجموعات: ' + (data.error || 'تأكد من اتصال الجلسة'));
+                    return;
+                }
+
+                if (!Array.isArray(data)) {
+                    console.error('Expected array of groups, got:', data);
+                    return;
+                }
+
+                const select = document.getElementById('availableGroups');
+                select.innerHTML = '<option value="">-- اختر مجموعة --</option>';
+                data.forEach(group => {
+                    const option = document.createElement('option');
+                    option.value = group.id;
+                    option.textContent = group.subject || group.id;
+                    option.dataset.name = group.subject;
+                    select.appendChild(option);
+                });
+                alert(`✅ تم تحميل ${data.length} مجموعة`);
+            } catch (error) { console.error(error); alert('❌ فشل تحميل المجموعات'); }
+        }
+
+        function selectGroup() {
+            const select = document.getElementById('availableGroups');
+            const selectedOption = select.options[select.selectedIndex];
+            if (selectedOption.value) {
+                document.getElementById('groupJid').value = selectedOption.value;
+                document.getElementById('groupName').value = selectedOption.dataset.name || '';
+            }
+        }
+
+        function showAddRecipientModal() {
+            document.getElementById('addRecipientModal').style.display = 'flex';
+            updateRecipientInputs();
+        }
+
+        function closeAddRecipientModal() {
+            document.getElementById('addRecipientModal').style.display = 'none';
+        }
+
+        async function saveRecipient() {
+            try {
+                const type = document.getElementById('recipientType').value;
+                let name, whatsappId;
+                if (type === 'individual') {
+                    name = document.getElementById('individualName').value;
+                    whatsappId = document.getElementById('individualPhone').value;
+                    if (!name || !whatsappId) { alert('يرجى إدخال الاسم ورقم الهاتف'); return; }
+                } else if (type === 'group') {
+                    name = document.getElementById('groupName').value;
+                    whatsappId = document.getElementById('groupJid').value;
+                    if (!name || !whatsappId) { alert('يرجى إدخال اسم المجموعة ومعرفها'); return; }
+                } else if (type === 'all') {
+                    name = 'الإرسال للكل';
+                    whatsappId = 'broadcast';
+                }
+
+                const res = await fetch('/api/islamic-reminders/recipient', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type, name, whatsapp_id: whatsappId })
+                });
+
+                if (res.ok) {
+                    alert('✅ تم إضافة المستلم بنجاح!');
+                    closeAddRecipientModal();
+                    location.reload();
+                } else {
+                    const errFn = await res.json();
+                    alert('❌ فشل إضافة المستلم: ' + (errFn.error || 'خطأ غير معروف'));
+                }
+            } catch (error) { console.error(error); alert('❌ خطأ في النظام'); }
+        }
+
+        async function toggleRecipient(id, enabled) {
+            try {
+                await fetch(`/api/islamic-reminders/recipient/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: enabled ? 1 : 0 })
+                });
+            } catch (error) { console.error(error); alert('❌ خطأ في الاتصال'); }
+        }
+
+        async function deleteRecipient(id) {
+            if (!confirm('هل أنت متأكد من حذف هذا المستلم؟')) return;
+            try {
+                const res = await fetch(`/api/islamic-reminders/recipient/${id}`, { method: 'DELETE' });
+                if (res.ok) { location.reload(); } else { alert('❌ فشل حذف المستلم'); }
+            } catch (error) { console.error(error); alert('❌ خطأ في الاتصال'); }
+        }
+
+        // Manual Prayer Times Functions
+        async function setPrayerTimeMode(mode) {
+            try {
+                const res = await fetch('/api/islamic-reminders/prayer-time-mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode })
+                });
+
+                if (res.ok) {
+                    // Update visual feedback immediately (optional, but nice)
+                    const modeDesc = document.getElementById('mode-desc');
+                    if (modeDesc) {
+                        modeDesc.textContent = mode === 'manual' ? 'إدخال يدوي مخصص' : 'تلقائي حسب الموقع الجغرافي';
+                    }
+
+                    alert('✅ تم تغيير وضع المواقيت بنجاح!');
+                    // Reload to reflect changes globally (e.g. settings modal options)
+                    location.reload();
+                } else {
+                    alert('❌ فشل تغيير الوضع');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ خطأ في الاتصال');
+            }
+        }
+
+        async function saveManualPrayerTimes() {
+            try {
+                const fajr = document.getElementById('manual-fajr').value;
+                const dhuhr = document.getElementById('manual-dhuhr').value;
+                const asr = document.getElementById('manual-asr').value;
+                const maghrib = document.getElementById('manual-maghrib').value;
+                const isha = document.getElementById('manual-isha').value;
+
+                if (!fajr || !dhuhr || !asr || !maghrib || !isha) {
+                    alert('⚠️ يرجى إدخال جميع المواقيت');
+                    return;
+                }
+
+                const res = await fetch('/api/islamic-reminders/manual-prayer-times', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fajr, dhuhr, asr, maghrib, isha })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('✅ ' + data.message);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    alert('❌ ' + (data.error || 'فشل حفظ المواقيت'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ خطأ في الاتصال');
+            }
+        }
+
+        async function linkSession() {
+            const sessionId = document.getElementById('sessionSelect').value;
+            if (!sessionId) return;
+            try {
+                const res = await fetch('/api/islamic-reminders/link-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId })
+                });
+                if (res.ok) { alert('✅ تم ربط الجلسة بنجاح!'); location.reload(); } else { alert('❌ فشل ربط الجلسة'); }
+            } catch (error) { console.error(error); alert('❌ خطأ في الاتصال'); }
+        }
+
+        async function togglePrayer(id, enabled) {
+            await updatePrayerSetting(id, 'enabled', enabled ? 1 : 0);
+        }
+
+        async function updatePrayerSetting(id, field, value) {
+            try {
+                await fetch(`/api/islamic-reminders/prayer/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ [field]: value })
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        async function updateFasting(field, value) {
+            try {
+                const val = (typeof value === 'boolean') ? (value ? 1 : 0) : value;
+                await fetch('/api/islamic-reminders/fasting', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ [field]: val })
+                });
+            } catch (error) { console.error(error); alert('❌ خطأ في الاتصال'); }
+        }
+
+        async function updateAdhkar(field, value) {
+            try {
+                const val = (typeof value === 'boolean') ? (value ? 1 : 0) : value;
+                await fetch('/api/islamic-reminders/adhkar', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ [field]: val })
+                });
+            } catch (error) { console.error(error); alert('❌ خطأ في الاتصال'); }
+        }
+
+        async function sendTestNotification() {
+            if (!confirm('هل تريد إرسال رسالة تجريبية لجميع المستلمين المفعلين؟')) return;
+            try {
+                const res = await fetch('/api/islamic-reminders/test-notification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (res.ok) { alert('✅ تم الإرسال بنجاح!\n' + data.message); } else { alert('❌ فشل الإرسال: ' + (data.error || 'خطأ غير معروف')); }
+            } catch (error) { console.error(error); alert('❌ خطأ في الاتصال'); }
+        }
+
+        async function testRecipient(id) {
+            try {
+                const res = await fetch(`/api/islamic-reminders/test-recipient/${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (res.ok) { alert('✅ تم إرسال الاختبار بنجاح!'); } else { alert('❌ فشل الإرسال: ' + (data.error || 'خطأ غير معروف')); }
+            } catch (error) { console.error(error); alert('❌ خطأ في الاتصال'); }
+        }
+
+        async function testIndividuals() {
+            if (!confirm('هل تريد إرسال رسالة تجريبية لجميع الأفراد المفعلين؟')) return;
+            try {
+                const res = await fetch('/api/islamic-reminders/test-individuals', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (res.ok) { alert('✅ ' + data.message); } else { alert('❌ ' + (data.error || 'فشل الإرسال')); }
+            } catch (error) { console.error(error); alert('❌ خطأ في الاتصال'); }
+        }
+
+        async function testGroups() {
+            if (!confirm('هل تريد إرسال رسالة تجريبية لجميع المجموعات المفعلة؟')) return;
+            try {
+                const res = await fetch('/api/islamic-reminders/test-groups', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (res.ok) { alert('✅ ' + data.message); } else { alert('❌ ' + (data.error || 'فشل الإرسال')); }
+            } catch (error) { console.error(error); alert('❌ خطأ في الاتصال'); }
+        }
+
+        async function setExperienceMode(mode) {
+            const btnManual = document.getElementById('btn-mode-manual');
+            const btnAuto = document.getElementById('btn-mode-auto');
+            const mediaContainer = document.getElementById('media-pref-container');
+
+            // Visual Feedback First
+            if (mode === 'manual') {
+                btnManual.classList.remove('mode-btn-inactive');
+                btnManual.classList.add('mode-btn-active');
+                btnAuto.classList.remove('mode-btn-active');
+                btnAuto.classList.add('mode-btn-inactive');
+
+                // Use class for hiding
+                mediaContainer.classList.add('hidden');
+
+                // Set Logic: Manual Source (Reading Mode)
+                await updateAdhkar('morning_source', 'manual');
+                await updateAdhkar('evening_source', 'manual');
+                await updateAdhkar('hadith_source', 'manual');
+            } else {
+                btnManual.classList.remove('mode-btn-active');
+                btnManual.classList.add('mode-btn-inactive');
+                btnAuto.classList.remove('mode-btn-inactive');
+                btnAuto.classList.add('mode-btn-active');
+
+                // Use class for showing
+                mediaContainer.classList.remove('hidden');
+
+                // Set Logic: Auto Source (Visual Mode)
+                await updateAdhkar('morning_source', 'auto');
+                await updateAdhkar('evening_source', 'auto');
+                await updateAdhkar('hadith_source', 'auto');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Restore Tab
+            const savedTab = localStorage.getItem('islamic_tab');
+            if (savedTab && document.getElementById(savedTab)) {
+                switchTab(savedTab);
+            }
+
+            // Mobile Header Logic
+            const mainContent = document.querySelector('.admin-content');
+            const header = document.querySelector('.content-header');
+            let lastScrollTop = 0;
+            const scrollThreshold = 10;
+
+            if (mainContent && header) {
+                mainContent.addEventListener('scroll', function () {
+                    if (window.innerWidth > 1024) return;
+                    let currentScroll = mainContent.scrollTop;
+                    if (Math.abs(lastScrollTop - currentScroll) <= scrollThreshold) return;
+                    if (currentScroll > lastScrollTop && currentScroll > 50) {
+                        header.classList.add('header-hidden');
+                    } else {
+                        header.classList.remove('header-hidden');
+                    }
+                    lastScrollTop = currentScroll;
+                });
+            }
+
+            // Toggle Submenu
+            window.toggleSubmenu = function (id) {
+                const submenu = document.getElementById(id);
+                const trigger = document.querySelector(`[onclick="window.toggleSubmenu('${id}')"]`);
+
+                if (submenu) {
+                    submenu.classList.toggle('open');
+                    if (trigger) {
+                        trigger.classList.toggle('open');
+                    }
+                }
+            };
+
+            // Initialization (Location & Sessions)
+            if (typeof populateCountries === 'function') populateCountries();
+            const savedCountry = "<%= config.location_country || 'Egypt' %>";
+            const savedCity = "<%= config.location_city || '' %>";
+
+            if (savedCountry && typeof updateGovernorates === 'function') {
+                const countrySelect = document.getElementById('country');
+                if (countrySelect) countrySelect.value = savedCountry;
+                updateGovernorates();
+                if (savedCity) {
+                    const countryData = LOCATION_DATA[savedCountry];
+                    if (countryData) {
+                        for (const [gov, cities] of Object.entries(countryData)) {
+                            if (cities[savedCity]) {
+                                const govElem = document.getElementById('governorate');
+                                if (govElem) {
+                                    govElem.value = gov;
+                                    updateCities();
+                                    const cityElem = document.getElementById('city');
+                                    if (cityElem) cityElem.value = savedCity;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Auto-link session if only one available
+            const sessionSelect = document.getElementById('sessionSelect');
+            if (sessionSelect && sessionSelect.options.length === 2 && sessionSelect.value === "") {
+                sessionSelect.value = sessionSelect.options[1].value;
+                if (typeof linkSession === 'function') linkSession();
+            }
+
+            // --- Dynamic "WOW" Features ---
+
+            // 1. Dua of the Day
+            const duas = [
+                "اللهم إني أسألك علماً نافعاً، ورزقاً طيباً، وعملاً متقبلاً",
+                "يا مقلب القلوب ثبت قلبي على دينك",
+                "اللهم إنك عفو كريم تحب العفو فاعفُ عني",
+                "سبحان الله وبحمده، سبحان الله العظيم",
+                "اللهم صلِ وسلم على نبينا محمد",
+                "ربنا آتنا في الدنيا حسنة وفي الآخرة حسنة وقنا عذاب النار",
+                "اللهم إني أعوذ بك من الهم والحزن، والعجز والكسل"
+            ];
+            const duaElem = document.getElementById('daily-dua');
+            if (duaElem) {
+                const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+                duaElem.innerText = `"${duas[dayOfYear % duas.length]}"`;
+            }
+
+            // 2. Qibla Hint Update
+            const qiblaData = { 'Egypt': 135, 'Saudi Arabia': 255, 'UAE': 260, 'Slovakia': 145 };
+            const currentCountry = "<%= config.location_country || '' %>";
+            const qiblaDegreeElem = document.getElementById('qibla-degree');
+            if (qiblaDegreeElem && currentCountry && qiblaData[currentCountry]) {
+                qiblaDegreeElem.innerText = qiblaData[currentCountry];
+            }
+        });
+    </script>
+    <!-- Prayer Settings Modal -->
+    <div id="prayer-settings-modal" class="modal-overlay"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-content"
+            style="background: var(--bg-card); padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">⚙️ إعدادات الصلاة</h3>
+                <button onclick="closePrayerSettings()"
+                    style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+
+            <input type="hidden" id="modal-prayer-id">
+            <input type="hidden" id="modal-prayer-key"> <!-- e.g., 'fajr', 'isha' -->
+            <p id="modal-prayer-name"
+                style="margin-bottom: 20px; font-weight: bold; color: var(--primary); font-size: 1.1rem; text-align: center;">
+            </p>
+
+            <!-- Manual Time Input (Only visible in manual mode) -->
+            <div id="modal-manual-time-group" class="form-group"
+                style="margin-bottom: 20px; display: none; background: var(--bg-secondary); padding: 10px; border-radius: 8px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold;">⏰ وقت الصلاة (يدوي):</label>
+                <input type="time" id="modal-manual-time" class="form-control" style="font-size: 1.1rem;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px;">🔔 تنبيه قبل الأذان بـ (دقيقة):</label>
+                <input type="number" id="modal-reminder-before" class="form-control" min="0" max="60"
+                    placeholder="0 = في الوقت بالضبط">
+                <small style="color: var(--text-muted); display: block; margin-top: 5px;">
+                    0 = تنبيه في نفس وقت الصلاة.
+                </small>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closePrayerSettings()" class="btn btn-outline"
+                    style="padding: 8px 15px;">إلغاء</button>
+                <button onclick="savePrayerSettings()" class="btn btn-primary" style="padding: 8px 15px;">حفظ
+                    التغييرات</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const currentMode = '<%= config.prayer_time_mode || "auto" %>';
+        const manualTimes = {
+            fajr: '<%= config.manual_fajr || "05:00" %>',
+            dhuhr: '<%= config.manual_dhuhr || "12:00" %>',
+            asr: '<%= config.manual_asr || "15:30" %>',
+            maghrib: '<%= config.manual_maghrib || "18:00" %>',
+            isha: '<%= config.manual_isha || "19:30" %>'
+        };
+
+        function openPrayerSettings(id, name, currentReminderVal) {
+            const prayerNames = { 'fajr': 'الفجر', 'dhuhr': 'الظهر', 'asr': 'العصر', 'maghrib': 'المغرب', 'isha': 'العشاء' };
+            const prayerKey = name.toLowerCase();
+
+            document.getElementById('modal-prayer-id').value = id;
+            document.getElementById('modal-prayer-key').value = prayerKey;
+            document.getElementById('modal-prayer-name').textContent = prayerNames[prayerKey] || name;
+            document.getElementById('modal-reminder-before').value = currentReminderVal;
+
+            // Show manual time input ONLY if mode is manual
+            const manualGroup = document.getElementById('modal-manual-time-group');
+            if (currentMode === 'manual') {
+                manualGroup.style.display = 'block';
+                document.getElementById('modal-manual-time').value = manualTimes[prayerKey] || '12:00';
+            } else {
+                manualGroup.style.display = 'none';
+            }
+
+            const modal = document.getElementById('prayer-settings-modal');
+            modal.style.display = 'flex';
+        }
+
+        function closePrayerSettings() {
+            document.getElementById('prayer-settings-modal').style.display = 'none';
+        }
+
+        async function savePrayerSettings() {
+            const id = document.getElementById('modal-prayer-id').value;
+            const prayerKey = document.getElementById('modal-prayer-key').value;
+            const reminderBefore = document.getElementById('modal-reminder-before').value;
+            const manualTime = document.getElementById('modal-manual-time').value;
+
+            try {
+                // 1. Save Reminder Value (Always)
+                const p1 = fetch('/api/islamic-reminders/prayer-setting', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: id,
+                        settings: { reminder_before_minutes: parseInt(reminderBefore) || 0 }
+                    })
+                });
+
+                // 2. Save Manual Time (Only if manual mode)
+                let p2 = Promise.resolve();
+                if (currentMode === 'manual') {
+                    const payload = {};
+                    payload[prayerKey] = manualTime; // e.g. { fajr: "05:00" } or { isha: "19:30" }
+
+                    p2 = fetch('/api/islamic-reminders/manual-prayer-times', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                await Promise.all([p1, p2]);
+                closePrayerSettings();
+                window.location.reload();
+
+            } catch (error) {
+                console.error('Save Settings Error:', error);
+                alert('حدث خطأ في الاتصال');
+            }
+        }
+
+        function setExperienceModeUI(mode) {
+            const btnManual = document.getElementById('btn-mode-manual');
+            const btnAuto = document.getElementById('btn-mode-auto');
+            const mediaContainer = document.getElementById('media-pref-container');
+            const modeInput = document.getElementById('experience_mode_input');
+
+            if (modeInput) modeInput.value = mode;
+
+            if (mode === 'manual') {
+                if (btnManual) {
+                    btnManual.classList.remove('mode-btn-inactive');
+                    btnManual.classList.add('mode-btn-active');
+                }
+                if (btnAuto) {
+                    btnAuto.classList.remove('mode-btn-active');
+                    btnAuto.classList.add('mode-btn-inactive');
+                }
+                if (mediaContainer) mediaContainer.classList.add('hidden');
+            } else {
+                if (btnManual) {
+                    btnManual.classList.remove('mode-btn-active');
+                    btnManual.classList.add('mode-btn-inactive');
+                }
+                if (btnAuto) {
+                    btnAuto.classList.remove('mode-btn-inactive');
+                    btnAuto.classList.add('mode-btn-active');
+                }
+                if (mediaContainer) mediaContainer.classList.remove('hidden');
+            }
+        }
+
+        // --- NEW: Instant Tools Logic ---
+        let currentContentTab = 'hadith';
+
+        function switchContentTab(tab) {
+            currentContentTab = tab;
+
+            // Visual Tab State
+            const tabs = ['hadith', 'adhkar-preview', 'custom'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (btn) {
+                    if (t === tab) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
+
+            // Panel Visibility (Simplified: just hiding headers/controls specific to type if needed)
+            const hadithPanel = document.getElementById('content-panel-hadith');
+            if (hadithPanel) {
+                hadithPanel.style.display = (tab === 'hadith') ? 'block' : 'none';
+            }
+
+            // Clear/Setup Preview
+            const previewText = document.getElementById('preview-text');
+            const previewSource = document.getElementById('preview-source');
+
+            if (tab === 'custom') {
+                previewText.readOnly = false;
+                previewText.value = '';
+                previewText.placeholder = 'أكتب رسالتك هنا...';
+                previewSource.readOnly = false;
+                previewSource.value = '';
+                previewSource.placeholder = 'المصدر (اختياري)';
+            } else if (tab === 'adhkar-preview') {
+                previewText.readOnly = true;
+                previewSource.readOnly = true;
+                // Pre-fill with a sample or keep empty until user selects "type"?
+                // For now, let's just set a placeholder
+                previewText.value = 'سيتم اختيار ذكر عشوائي عند الإرسال...';
+                previewSource.value = 'تلقائي';
+            } else {
+                previewText.readOnly = true;
+                previewText.placeholder = 'انتظر تحميل الحديث...';
+                previewSource.readOnly = true;
+                previewSource.value = '';
+                if (previewText.value === '') fetchRandomHadith(); // Auto-fetch on switch back
+            }
+        }
+
+        async function fetchRandomHadith() {
+            const book = document.getElementById('hadith-book-select').value;
+            const previewText = document.getElementById('preview-text');
+            const previewSource = document.getElementById('preview-source');
+
+            previewText.value = 'جاري التحميل...';
+
+            try {
+                const res = await fetch(`/api/hadith/random?book=${book}`);
+                const data = await res.json();
+
+                if (res.ok) {
+                    previewText.value = data.text;
+                    previewSource.value = `${data.source} - ${data.grade} (${data.number})`;
+                } else {
+                    previewText.value = 'فشل تحميل الحديث. حاول مرة أخرى.';
+                }
+            } catch (e) {
+                console.error(e);
+                previewText.value = 'خطأ في الاتصال';
+            }
+        }
+
+        async function sendInstantMessage() {
+            const previewText = document.getElementById('preview-text').value;
+            const previewSource = document.getElementById('preview-source').value;
+
+            if (!previewText || previewText === 'جاري التحميل...') {
+                alert('الرجاء تجهيز محتوى للإرسال أولاً');
+                return;
+            }
+
+            if (!confirm('هل تريد إرسال هذا المحتوى الآن لجميع المستلمين؟')) return;
+
+            try {
+                const res = await fetch('/api/islamic-reminders/test-notification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        forceContent: previewText,
+                        forceSource: previewSource
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert('✅ تم الإرسال بنجاح!');
+                } else {
+                    alert('❌ فشل الإرسال: ' + (data.error || 'خطأ غير معروف'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ خطأ في الاتصال');
+            }
+        }
+
+        // Initialize default tab
+        document.addEventListener('DOMContentLoaded', () => {
+            switchContentTab('hadith');
+            switchAdhkarSubTab('morning'); // Initialize first sub-tab
+        });
+
+        // Switch between Adhkar sub-tabs
+        function switchAdhkarSubTab(tab) {
+            // Update tab buttons
+            const tabs = ['morning', 'evening', 'hadith', 'quran', 'variety'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`adhkar-subtab-${t}`);
+                const panel = document.getElementById(`adhkar-panel-${t}`);
+
+                if (btn) {
+                    if (t === tab) {
+                        btn.classList.add('active');
+                        if (panel) panel.style.display = 'block';
+                    } else {
+                        btn.classList.remove('active');
+                        if (panel) panel.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        async function saveAdhkarTabSettings() {
+            try {
+                // 1. Gather Adhkar Data
+                const expModeElem = document.getElementById('experience_mode_input');
+                const expMode = expModeElem ? expModeElem.value : 'auto';
+                const mediaPrefElem = document.querySelector('input[name="media_pref"]:checked');
+                const mediaPref = mediaPrefElem ? mediaPrefElem.value : 'mixed';
+
+                const textLengthElem = document.querySelector('input[name="text_length"]:checked');
+                const textLength = textLengthElem ? textLengthElem.value : 'full';
+
+                const adhkarPayload = {
+                    morning_source: expMode,
+                    evening_source: expMode,
+                    hadith_source: expMode,
+                    media_preference: mediaPref,
+                    text_length: textLength,
+
+                    morning_time: document.getElementById('morning_time').value,
+                    morning_enabled: document.getElementById('morning_enabled').checked,
+
+                    evening_time: document.getElementById('evening_time').value,
+                    evening_enabled: document.getElementById('evening_enabled').checked,
+
+                    hadith_time: document.getElementById('hadith_time').value,
+                    hadith_enabled: document.getElementById('hadith_enabled').checked,
+
+                    content_time: document.getElementById('content_time').value,
+                    content_type: document.getElementById('content_type').value,
+                    content_enabled: document.getElementById('content_enabled').checked
+                };
+
+                // 2. Gather Fasting Data
+                const fastingPayload = {
+                    reminder_time: document.getElementById('fasting_reminder_time').value,
+                    monday_thursday: document.getElementById('fasting_monday_thursday') ? document.getElementById('fasting_monday_thursday').checked : false,
+                    white_days: document.getElementById('fasting_white_days') ? document.getElementById('fasting_white_days').checked : false,
+                    ashura: document.getElementById('fasting_ashura') ? document.getElementById('fasting_ashura').checked : false,
+                    ramadan_alerts: document.getElementById('fasting_ramadan_alerts') ? document.getElementById('fasting_ramadan_alerts').checked : false
+                };
+
+                // 3. Send Requests concurrently
+                const p1 = fetch('/api/islamic-reminders/adhkar', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(adhkarPayload)
+                });
+
+                const p2 = fetch('/api/islamic-reminders/fasting', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(fastingPayload)
+                });
+
+                await Promise.all([p1, p2]);
+                alert('✅ تم حفظ جميع الإعدادات بنجاح!');
+            } catch (error) {
+                console.error('Save Adhkar Tab Error:', error);
+                alert('❌ حدث خطأ أثناء الحفظ');
+            }
+        }
+    </script>
+</body>
+
+</html>
