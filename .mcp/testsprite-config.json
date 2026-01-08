@@ -6,7 +6,7 @@
                 "@testsprite/testsprite-mcp@latest"
             ],
             "env": {
-                "API_KEY": "sk-user-ZFFGE6bpcxc-tmVAtSCxIYFDrp2tQkeAxteurCuAegglEdv2keuXlpjhlDsjHFNa81psHq7RvephlmhMJB8la_83Y2Mi9vNMRHn65C2_IRyO3aOv_oTnqbsq9N3sTyoobes"
+                "API_KEY": "${TESTSPRITE_API_KEY}"
             }
         }
     }
