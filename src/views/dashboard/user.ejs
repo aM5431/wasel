@@ -395,6 +395,7 @@
             }
         }
 
+
         /* Tablet (769px - 1024px) */
         @media (min-width: 769px) and (max-width: 1024px) {
             .admin-content {
@@ -403,6 +404,85 @@
 
             .modal-content {
                 max-width: 450px;
+            }
+        }
+
+        /* Responsive Table Cards for Mobile */
+        @media (max-width: 768px) {
+
+            .data-table,
+            .data-table thead,
+            .data-table tbody,
+            .data-table th,
+            .data-table td,
+            .data-table tr {
+                display: block;
+            }
+
+            .data-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            .data-table tr {
+                margin-bottom: 15px;
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 15px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            }
+
+            .data-table td {
+                border: none;
+                border-bottom: 1px solid var(--border);
+                position: relative;
+                padding-right: 50% !important;
+                text-align: left;
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+
+            .data-table td:last-child {
+                border-bottom: none;
+            }
+
+            .data-table td:before {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                font-weight: bold;
+                color: var(--text-muted);
+                text-align: right;
+            }
+
+            /* Add labels to table cells */
+            .data-table td:nth-of-type(1):before {
+                content: "الجلسة";
+            }
+
+            .data-table td:nth-of-type(2):before {
+                content: "الجهاز";
+            }
+
+            .data-table td:nth-of-type(3):before {
+                content: "رقم الهاتف";
+            }
+
+            .data-table td:nth-of-type(4):before {
+                content: "الحالة";
+            }
+
+            .data-table td:nth-of-type(5):before {
+                content: "تاريخ الإنشاء";
+            }
+
+            .data-table td:nth-of-type(6):before {
+                content: "إجراءات";
             }
         }
     </style>

@@ -2670,14 +2670,19 @@
             };
 
             try {
-                await fetch(`/ api / admin / users / ${id} `, {
+                const res = await fetch(`/api/admin/users/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                closeModal('edit-user-modal');
-                loadUsers();
-                alert('تم تحديث المستخدم بنجاح');
+
+                if (res.ok) {
+                    closeModal('edit-user-modal');
+                    loadUsers();
+                    alert('تم تحديث المستخدم بنجاح');
+                } else {
+                    alert('حدث خطأ أثناء التحديث');
+                }
             } catch (error) {
                 alert('حدث خطأ أثناء التحديث');
             }
@@ -2688,7 +2693,7 @@
             if (!confirm(`هل تريد ${newRole === 'admin' ? 'ترقية' : 'إلغاء صلاحية'} هذا المستخدم؟`)) return;
 
             try {
-                await fetch(`/ api / admin / users / ${userId}/role`, {
+                await fetch(`/api/admin/users/${userId}/role`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ role: newRole })

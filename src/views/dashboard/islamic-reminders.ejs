@@ -1242,7 +1242,7 @@
                         style="margin-bottom: 25px; border-bottom: 2px solid var(--border); background: var(--bg-secondary); padding: 8px; border-radius: 10px 10px 0 0;">
                         <button onclick="switchAdhkarSubTab('adhkar')" id="adhkar-subtab-adhkar" class="tab-btn active"
                             style="flex:1;">
-                            <i class="fas fa-pray"></i> الأذكار اليومية
+                            <i class="fas fa-sun"></i> أذكار الصباح والمساء
                         </button>
                         <button onclick="switchAdhkarSubTab('hadith')" id="adhkar-subtab-hadith" class="tab-btn"
                             style="flex:1;">
@@ -2996,28 +2996,10 @@
         // Initialize default tab
         document.addEventListener('DOMContentLoaded', () => {
             switchContentTab('hadith');
-            switchAdhkarSubTab('morning'); // Initialize first sub-tab
+            switchAdhkarSubTab('adhkar'); // Initialize first sub-tab
         });
 
-        // Switch between Adhkar sub-tabs
-        function switchAdhkarSubTab(tab) {
-            // Update tab buttons
-            const tabs = ['morning', 'evening', 'hadith', 'quran', 'variety'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`adhkar-subtab-${t}`);
-                const panel = document.getElementById(`adhkar-panel-${t}`);
-
-                if (btn) {
-                    if (t === tab) {
-                        btn.classList.add('active');
-                        if (panel) panel.style.display = 'block';
-                    } else {
-                        btn.classList.remove('active');
-                        if (panel) panel.style.display = 'none';
-                    }
-                }
-            });
-        }
+        // Duplicate switchAdhkarSubTab removed
 
         async function saveAdhkarTabSettings() {
             try {
