@@ -20,7 +20,7 @@ process.on('uncaughtException', (error) => {
 
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 5000;
 
 // Apply server optimizations with enhanced security
 ServerOptimizer.applyOptimizations(app);

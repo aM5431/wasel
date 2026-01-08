@@ -1,0 +1,132 @@
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+command finished with error [sh -c npm start]: exit status 1
+    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+> node server.js
+✅ Node.js optimizations applied
+npm notice To update run: npm install -g npm@11.7.0
+> whatsapp-saas-platform@1.0.0 start
+    at bindings (/home/runner/workspace/node_modules/bindings/bindings.js:112:48)
+    at bindings (/home/runner/workspace/node_modules/bindings/bindings.js:112:48)
+    at Module._load (node:internal/modules/cjs/loader:1096:12)
+    at Module.load (node:internal/modules/cjs/loader:1275:32) {
+}
+✅ Server optimizations applied
+    at bindings (/home/runner/workspace/node_modules/bindings/bindings.js:112:48)
+command finished with error [sh -c npm start]: exit status 1
+    at Module._extensions..node (node:internal/modules/cjs/loader:1651:18)
+command finished with error [sh -c npm start]: exit status 1
+✅ Node.js optimizations applied
+  code: 'ERR_DLOPEN_FAILED'
+Uncaught Exception: Error: /home/runner/workspace/node_modules/sqlite3/build/Release/node_sqlite3.node: invalid ELF header
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+    at require (node:internal/modules/helpers:182:18)
+    at Object.<anonymous> (/home/runner/workspace/node_modules/sqlite3/lib/sqlite3-binding.js:1:37)
+  code: 'ERR_DLOPEN_FAILED'
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+}
+  code: 'ERR_DLOPEN_FAILED'
+    at Object.<anonymous> (/home/runner/workspace/node_modules/sqlite3/lib/sqlite3-binding.js:1:37)
+  code: 'ERR_DLOPEN_FAILED'
+    at Object.<anonymous> (/home/runner/workspace/node_modules/sqlite3/lib/sqlite3-binding.js:1:37)
+    at Module.load (node:internal/modules/cjs/loader:1275:32) {
+✅ Server optimizations applied
+✅ Server optimizations applied
+> whatsapp-saas-platform@1.0.0 start
+> node server.js
+}
+✅ Server optimizations applied
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at Module._extensions..node (node:internal/modules/cjs/loader:1651:18)
+✅ Node.js optimizations applied
+    at Module.load (node:internal/modules/cjs/loader:1275:32) {
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+    at Module._load (node:internal/modules/cjs/loader:1096:12)
+> node server.js
+    at require (node:internal/modules/helpers:182:18)
+> whatsapp-saas-platform@1.0.0 start
+> node server.js
+    at bindings (/home/runner/workspace/node_modules/bindings/bindings.js:112:48)
+    at Object.<anonymous> (/home/runner/workspace/node_modules/sqlite3/lib/sqlite3-binding.js:1:37)
+Uncaught Exception: Error: /home/runner/workspace/node_modules/sqlite3/build/Release/node_sqlite3.node: invalid ELF header
+command finished with error [sh -c npm start]: exit status 1
+    at Object.<anonymous> (/home/runner/workspace/node_modules/sqlite3/lib/sqlite3-binding.js:1:37)
+> whatsapp-saas-platform@1.0.0 start
+    at bindings (/home/runner/workspace/node_modules/bindings/bindings.js:112:48)
+    at Module._load (node:internal/modules/cjs/loader:1096:12)
+}
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+command finished with error [sh -c npm start]: exit status 1
+  code: 'ERR_DLOPEN_FAILED'
+    at Module._extensions..node (node:internal/modules/cjs/loader:1651:18)
+    at require (node:internal/modules/helpers:182:18)
+✅ Node.js optimizations applied
+  code: 'ERR_DLOPEN_FAILED'
+✅ Server optimizations applied
+    at Module.load (node:internal/modules/cjs/loader:1275:32) {
+    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+> whatsapp-saas-platform@1.0.0 start
+    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+> node server.js
+}
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+Uncaught Exception: Error: /home/runner/workspace/node_modules/sqlite3/build/Release/node_sqlite3.node: invalid ELF header
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at Module._load (node:internal/modules/cjs/loader:1096:12)
+Uncaught Exception: Error: /home/runner/workspace/node_modules/sqlite3/build/Release/node_sqlite3.node: invalid ELF header
+    at Module._load (node:internal/modules/cjs/loader:1096:12)
+✅ Server optimizations applied
+Uncaught Exception: Error: /home/runner/workspace/node_modules/sqlite3/build/Release/node_sqlite3.node: invalid ELF header
+    at bindings (/home/runner/workspace/node_modules/bindings/bindings.js:112:48)
+    at Module.load (node:internal/modules/cjs/loader:1275:32) {
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+    at Object.<anonymous> (/home/runner/workspace/node_modules/sqlite3/lib/sqlite3-binding.js:1:37)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+> node server.js
+    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+  code: 'ERR_DLOPEN_FAILED'
+  code: 'ERR_DLOPEN_FAILED'
+> whatsapp-saas-platform@1.0.0 start
+    at require (node:internal/modules/helpers:182:18)
+    at Object.<anonymous> (/home/runner/workspace/node_modules/sqlite3/lib/sqlite3-binding.js:1:37)
+    at bindings (/home/runner/workspace/node_modules/bindings/bindings.js:112:48)
+✅ Node.js optimizations applied
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+}
+command finished with error [sh -c npm start]: exit status 1
+✅ Node.js optimizations applied
+    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+    at Module._extensions..node (node:internal/modules/cjs/loader:1651:18)
+command finished with error [sh -c npm start]: exit status 1
+✅ Server optimizations applied
+    at require (node:internal/modules/helpers:182:18)
+}
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+    at Module.load (node:internal/modules/cjs/loader:1275:32) {
+    at Module._extensions..node (node:internal/modules/cjs/loader:1651:18)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+    at Module._load (node:internal/modules/cjs/loader:1096:12)
+> whatsapp-saas-platform@1.0.0 start
+    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+    at Module.load (node:internal/modules/cjs/loader:1275:32) {
+✅ Server optimizations applied
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+✅ Node.js optimizations applied
+> node server.js
+command finished with error [sh -c npm start]: exit status 1
+Uncaught Exception: Error: /home/runner/workspace/node_modules/sqlite3/build/Release/node_sqlite3.node: invalid ELF header
+    at Module._extensions..node (node:internal/modules/cjs/loader:1651:18)
+    at bindings (/home/runner/workspace/node_modules/bindings/bindings.js:112:48)
+}
+    at require (node:internal/modules/helpers:182:18)
+    at Module.require (node:internal/modules/cjs/loader:1298:19)
+    at Object.<anonymous> (/home/runner/workspace/node_modules/sqlite3/lib/sqlite3-binding.js:1:37)
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+  code: 'ERR_DLOPEN_FAILED'
+crash loop detected
+2026-01-08T13:05:54Z error: The deployment is crash looping. This can happen if the run command fails or exits immediately after starting. Check the logs for more information.
