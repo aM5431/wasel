@@ -1,13 +1,5 @@
-modules = [
-  "nodejs-20"
-  "sqlite"
-  "chromium"
-];
-
 run = "npm start"
-
 entrypoint = "server.js"
-
 hidden = [".config", "package-lock.json"]
 
 [nix]
