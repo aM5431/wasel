@@ -1,6 +1,0 @@
-run = "npm start"
-entrypoint = "server.js"
-hidden = [".config", "package-lock.json"]
-
-[env]
-PORT = "3000"
