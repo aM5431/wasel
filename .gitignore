@@ -1,1 +1,24 @@
-node_modules
+# Dependencies
+node_modules/
+package-lock.json
+
+# Database
+*.db
+
+# Environment
+.env
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Session data
+auth_info_baileys/
