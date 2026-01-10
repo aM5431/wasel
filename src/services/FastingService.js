@@ -1,11 +1,11 @@
-const HijriDate = require('hijri-date').default || require('hijri-date');
+const HijriDate = require('hijri-date').default;
 
 class FastingService {
     /**
      * Check if a specific date (or tomorrow) is a fasting day
      * @param {Date} date - The date to check (default: tomorrow)
      */
-    static checkFastingDay(date = new Date(), hijriOffset = 0) {
+    static checkFastingDay(date = new Date()) {
         // We usually want to check for *tomorrow* to remind *today*
         const targetDate = new Date(date);
         targetDate.setDate(targetDate.getDate() + 1);
@@ -16,27 +16,8 @@ class FastingService {
         const isThursday = dayOfWeek === 4;
 
         // Hijri check
-        // Ensure we pass targetDate to HijriDate constructor
-        // @ts-ignore
+        // hijri-date lib usage: new HijriDate(date)
         const hijri = new HijriDate(targetDate);
-
-        // Apply Offset
-        if (hijriOffset !== 0) {
-            // HijriDate library usually supports addDay/subDay which modifies in place or return new
-            // Assuming addDay() adds 1 day.
-            // If offset is positive
-            for (let i = 0; i < Math.abs(hijriOffset); i++) {
-                if (hijriOffset > 0) {
-                    if (typeof hijri.addDay === 'function') hijri.addDay();
-                } else {
-                    if (typeof hijri.subDay === 'function') hijri.subDay();
-                    // Fallback if subDay doesn't exist? (Many libs like this only have addDay)
-                    // If subDay missing, we might need to recreate date shifted?
-                    // Let's assume subDay exists or just warn.
-                }
-            }
-        }
-
         const hijriDay = hijri.getDate();
 
         // White days are 13, 14, 15
@@ -50,7 +31,7 @@ class FastingService {
 
         return {
             date: targetDate,
-            hijriDate: `${hijriDay}/${hijri.getMonth()}/${hijri.getFullYear ? hijri.getFullYear() : hijri.year}`,
+            hijriDate: `${hijriDay}/${hijri.getMonth()}/${hijri.getFullYear()}`,
             isMonday,
             isThursday,
             isWhiteDay,

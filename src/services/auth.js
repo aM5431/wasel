@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const { db } = require('../database/db');
+const NotificationService = require('./NotificationService');
 
 // Helper to generate UUID
 function generateUUID() {
@@ -10,8 +11,43 @@ function generateUUID() {
 }
 
 class AuthService {
+    /**
+     * Normalizes phone numbers to international format (e.g., +2010... -> 2010...)
+     * Specifically handles Egyptian numbers starting with 0.
+     */
+    static normalizePhone(phone) {
+        if (!phone) return phone;
+        // Remove all non-digit characters
+        let cleaned = phone.replace(/\D/g, '');
+
+        // 1. Remove leading 00 if present (international prefix)
+        if (cleaned.startsWith('00')) {
+            cleaned = cleaned.substring(2);
+        }
+
+        // 2. Handle Egyptian specifics
+        // If it starts with 200... (result of +20 + 010...) and is 12 or 13 digits
+        if (cleaned.startsWith('200') && (cleaned.length === 12 || cleaned.length === 13)) {
+            cleaned = '20' + cleaned.substring(3);
+        }
+
+        // If it starts with 0... and is 11 digits (local Egyptian)
+        if (cleaned.startsWith('0') && cleaned.length === 11) {
+            cleaned = '20' + cleaned.substring(1);
+        }
+
+        // If it starts with 10, 11, 12, 15 and is 10 digits (no leading 0 or 20)
+        const egPrefixes = ['10', '11', '12', '15'];
+        if (cleaned.length === 10 && egPrefixes.some(p => cleaned.startsWith(p))) {
+            cleaned = '20' + cleaned;
+        }
+
+        return cleaned;
+    }
+
     static async register(userData) {
-        const { name, phone, email, password, planId } = userData;
+        let { name, phone, email, password, planId } = userData;
+        phone = this.normalizePhone(phone);
 
         // 1. Check if user exists
         const existing = await db.get('SELECT id FROM users WHERE phone = ? OR email = ?', [phone, email]);
@@ -49,6 +85,12 @@ class AuthService {
             VALUES (?, ?, ?, ?, ?)`,
             [userId, plan.id, subStatus, startDate, endDate]);
 
+        await NotificationService.createAdminNotification(
+            'مستخدم جديد 👤',
+            `قام ${name} بالتسجيل في المنصة (باقة ${plan.name})`,
+            'info'
+        );
+
         return {
             userId,
             status: subStatus,
@@ -61,7 +103,11 @@ class AuthService {
     }
 
     static async login(identifier, password) {
-        const user = await db.get('SELECT * FROM users WHERE phone = ? OR email = ?', [identifier, identifier]);
+        // If identifier looks like a phone number (mostly digits), normalize it
+        const normalizedIdentifier = identifier.includes('@') ? identifier : this.normalizePhone(identifier);
+
+        const user = await db.get('SELECT * FROM users WHERE phone = ? OR email = ?', [normalizedIdentifier, identifier]);
+
         if (!user) {
             throw new Error('بيانات الدخول غير صحيحة');
         }

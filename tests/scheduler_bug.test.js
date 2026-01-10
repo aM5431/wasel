@@ -16,7 +16,8 @@ jest.mock('../src/services/IslamicRemindersService', () => ({
     getFastingSettings: jest.fn()
 }));
 jest.mock('../src/services/baileys/MessageService', () => ({
-    sendMessage: jest.fn()
+    sendMessage: jest.fn(),
+    addToQueue: jest.fn()
 }));
 jest.mock('../src/services/baileys/SessionManager', () => ({
     getSession: jest.fn()
@@ -55,7 +56,7 @@ describe('SchedulerService Bug Reproduction', () => {
         // So db.get should NOT be called for config lookup.
         expect(db.get).not.toHaveBeenCalledWith(expect.stringContaining('FROM islamic_reminders_config'), expect.anything());
 
-        expect(MessageService.sendMessage).toHaveBeenCalledWith('sess-1', '123@g.us', 'Test Msg');
+        expect(MessageService.addToQueue).toHaveBeenCalledWith('sess-1', '123@g.us', 'Test Msg', 'text', expect.any(Object));
     });
 
     test('should fallback to legacy lookup if configId missing', async () => {
@@ -67,7 +68,7 @@ describe('SchedulerService Bug Reproduction', () => {
 
         expect(db.get).toHaveBeenCalledWith(expect.stringContaining('FROM islamic_reminders_config'), expect.anything());
         expect(IslamicRemindersService.getRecipients).toHaveBeenCalledWith('legacy-cfg');
-        expect(MessageService.sendMessage).toHaveBeenCalledWith('sess-1', '456@s.whatsapp.net', 'Legacy Msg');
+        expect(MessageService.addToQueue).toHaveBeenCalledWith('sess-1', '456@s.whatsapp.net', 'Legacy Msg', 'text', expect.any(Object));
     });
 
     test('should send to all enabled recipients', async () => {
@@ -82,14 +83,14 @@ describe('SchedulerService Bug Reproduction', () => {
         await SchedulerService.sendWhatsAppMessage('sess-1', 'u1', 'Test Message');
 
         // Should call sendMessage 2 times (Group A, Person B)
-        expect(MessageService.sendMessage).toHaveBeenCalledTimes(2);
+        expect(MessageService.addToQueue).toHaveBeenCalledTimes(2);
 
         // Exact calls
-        expect(MessageService.sendMessage).toHaveBeenCalledWith('sess-1', '123@g.us', 'Test Message');
-        expect(MessageService.sendMessage).toHaveBeenCalledWith('sess-1', '456@s.whatsapp.net', 'Test Message');
+        expect(MessageService.addToQueue).toHaveBeenCalledWith('sess-1', '123@g.us', 'Test Message', 'text', expect.any(Object));
+        expect(MessageService.addToQueue).toHaveBeenCalledWith('sess-1', '456@s.whatsapp.net', 'Test Message', 'text', expect.any(Object));
 
         // Should NOT call for disabled
-        expect(MessageService.sendMessage).not.toHaveBeenCalledWith('sess-1', '789@s.whatsapp.net', expect.anything());
+        expect(MessageService.addToQueue).not.toHaveBeenCalledWith('sess-1', '789@s.whatsapp.net', expect.anything(), expect.anything(), expect.anything());
     });
 
     test('should fallback to owner if NO recipients exist', async () => {
@@ -100,6 +101,6 @@ describe('SchedulerService Bug Reproduction', () => {
 
         await SchedulerService.sendWhatsAppMessage('sess-1', 'u1', 'Test Message');
 
-        expect(MessageService.sendMessage).toHaveBeenCalledWith('sess-1', 'user-phone', 'Test Message');
+        expect(MessageService.addToQueue).toHaveBeenCalledWith('sess-1', 'user-phone', 'Test Message', 'text', expect.any(Object));
     });
 });

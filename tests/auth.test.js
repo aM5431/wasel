@@ -1,3 +1,8 @@
+// Mock dependencies BEFORE requiring the module under test
+jest.mock('../src/services/NotificationService', () => ({
+    createAdminNotification: jest.fn().mockResolvedValue(true)
+}));
+
 const AuthService = require('../src/services/auth');
 const { db } = require('../src/database/db');
 

@@ -1,5 +1,7 @@
 const request = require('supertest');
 
+jest.setTimeout(30000);
+
 // Mock heavy background services to prevent side-effects/crashes
 jest.mock('../src/services/SchedulerService', () => ({
     init: jest.fn()

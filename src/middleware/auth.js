@@ -4,8 +4,8 @@ const SECRET = 'super_secret_key_123'; // In prod, use process.env
 const authenticateToken = (req, res, next) => {
     const token = req.cookies.token;
     if (!token) {
-        // Check if this is an API request
-        if (req.path.startsWith('/api/')) {
+        // Check if this is an API request (use originalUrl to get full path)
+        if (req.originalUrl.startsWith('/api/')) {
             return res.status(401).json({ error: 'Authentication required' });
         }
         return res.redirect('/login');
@@ -14,8 +14,8 @@ const authenticateToken = (req, res, next) => {
     jwt.verify(token, SECRET, (err, user) => {
         if (err) {
             console.error('JWT verification error:', err.message);
-            // Check if this is an API request
-            if (req.path.startsWith('/api/')) {
+            // Check if this is an API request (use originalUrl to get full path)
+            if (req.originalUrl.startsWith('/api/')) {
                 return res.status(401).json({ error: 'Invalid token: ' + err.message });
             }
             return res.redirect('/login');

@@ -94,6 +94,8 @@ async function init() {
         reminder_before_minutes INTEGER DEFAULT 10,
         send_adhan INTEGER DEFAULT 1,
         send_after_reminder INTEGER DEFAULT 0,
+        post_prayer_adhkar_enabled INTEGER DEFAULT 1,
+        post_prayer_adhkar_delay INTEGER DEFAULT 5,
         adhan_sound TEXT,
         FOREIGN KEY(config_id) REFERENCES islamic_reminders_config(id)
     );
@@ -104,7 +106,6 @@ async function init() {
         monday_thursday INTEGER DEFAULT 0,
         white_days INTEGER DEFAULT 0,
         ashura INTEGER DEFAULT 0,
-        dhul_hijjah_first_10 INTEGER DEFAULT 0,
         dhul_hijjah_first_10 INTEGER DEFAULT 0,
         ramadan_alerts INTEGER DEFAULT 1,
         monday INTEGER DEFAULT 0,
@@ -248,6 +249,14 @@ async function init() {
     try { await dbAsync.run(`ALTER TABLE adhkar_settings ADD COLUMN content_enabled INTEGER DEFAULT 1`); } catch (e) { }
     try { await dbAsync.run(`ALTER TABLE adhkar_settings ADD COLUMN content_time TEXT DEFAULT '21:00'`); } catch (e) { }
     try { await dbAsync.run(`ALTER TABLE adhkar_settings ADD COLUMN content_type TEXT DEFAULT 'mixed'`); } catch (e) { }
+    try { await dbAsync.run(`ALTER TABLE adhkar_settings ADD COLUMN quran_enabled INTEGER DEFAULT 0`); } catch (e) { }
+    try { await dbAsync.run(`ALTER TABLE adhkar_settings ADD COLUMN quran_time TEXT DEFAULT '09:00'`); } catch (e) { }
+    try { await dbAsync.run(`ALTER TABLE adhkar_settings ADD COLUMN quran_pages_per_day INTEGER DEFAULT 5`); } catch (e) { }
+    try { await dbAsync.run(`ALTER TABLE adhkar_settings ADD COLUMN text_length TEXT DEFAULT 'full'`); } catch (e) { }
+    try { await dbAsync.run(`ALTER TABLE prayer_settings ADD COLUMN post_prayer_adhkar_enabled INTEGER DEFAULT 1`); } catch (e) { }
+    try { await dbAsync.run(`ALTER TABLE prayer_settings ADD COLUMN post_prayer_adhkar_delay INTEGER DEFAULT 5`); } catch (e) { }
+    try { await dbAsync.run(`ALTER TABLE prayer_settings ADD COLUMN post_prayer_adhkar_show_link INTEGER DEFAULT 1`); } catch (e) { }
+    try { await dbAsync.run(`ALTER TABLE adhkar_settings ADD COLUMN before_after_prayer INTEGER DEFAULT 0`); } catch (e) { }
 
     await dbAsync.exec(schema);
 
@@ -302,6 +311,84 @@ async function init() {
         await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN evening_source TEXT DEFAULT 'mixed'");
         await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN hadith_source TEXT DEFAULT 'mixed'");
     } catch (e) { }
+
+    try {
+        await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN show_source_link INTEGER DEFAULT 1");
+    } catch (e) { }
+
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN hadith_media_mode TEXT DEFAULT 'text'"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN hadith_show_source_text INTEGER DEFAULT 1"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN hadith_image_source TEXT DEFAULT 'quran_pages'"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN hadith_show_image_source_text INTEGER DEFAULT 1"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN hadith_image_theme TEXT DEFAULT 'mixed'"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN hadith_times_count INTEGER DEFAULT 1"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN hadith_times_json TEXT"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN selected_enabled INTEGER DEFAULT 0"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN selected_category TEXT DEFAULT 'general'"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN selected_media_mode TEXT DEFAULT 'text'"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN selected_show_source_text INTEGER DEFAULT 1"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN selected_show_link INTEGER DEFAULT 1"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN selected_image_theme TEXT DEFAULT 'mosques'"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN selected_times_count INTEGER DEFAULT 1"); } catch (e) { }
+    try { await dbAsync.run("ALTER TABLE adhkar_settings ADD COLUMN selected_times_json TEXT"); } catch (e) { }
+
+    await dbAsync.run(`
+        CREATE TABLE IF NOT EXISTS hadith_schedule_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            config_id TEXT NOT NULL,
+            date TEXT NOT NULL,
+            send_time TEXT NOT NULL,
+            hadith_id TEXT,
+            hadith_hash TEXT,
+            image_url TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(config_id, date, send_time),
+            UNIQUE(config_id, date, hadith_id),
+            UNIQUE(config_id, date, hadith_hash),
+            UNIQUE(config_id, date, image_url)
+        )
+    `);
+
+    await dbAsync.run(`
+        CREATE TABLE IF NOT EXISTS selected_adhkar_schedule_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            config_id TEXT NOT NULL,
+            date TEXT NOT NULL,
+            send_time TEXT NOT NULL,
+            content_hash TEXT,
+            image_url TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(config_id, date, send_time)
+        )
+    `);
+
+    await dbAsync.run(`
+        CREATE TABLE IF NOT EXISTS custom_schedule_jobs (
+            id TEXT PRIMARY KEY,
+            config_id TEXT NOT NULL,
+            title TEXT,
+            enabled INTEGER DEFAULT 1,
+            payload_json TEXT NOT NULL,
+            schedule_json TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(config_id) REFERENCES islamic_reminders_config(id)
+        )
+    `);
+
+    await dbAsync.run(`
+        CREATE TABLE IF NOT EXISTS custom_schedule_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            job_id TEXT NOT NULL,
+            config_id TEXT NOT NULL,
+            date TEXT NOT NULL,
+            send_time TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(job_id, date, send_time),
+            FOREIGN KEY(job_id) REFERENCES custom_schedule_jobs(id),
+            FOREIGN KEY(config_id) REFERENCES islamic_reminders_config(id)
+        )
+    `);
 
     try {
         await dbAsync.run('ALTER TABLE whatsapp_sessions ADD COLUMN last_connected DATETIME');
@@ -442,14 +529,12 @@ async function init() {
         const insertPlan = 'INSERT INTO plans (name, duration_days, price, is_trial, features, max_sessions) VALUES (?, ?, ?, ?, ?, ?)';
 
         await dbAsync.run(insertPlan, ['باقة تجريبية', 7, 0, 1, JSON.stringify({ prayer_times: true, adhkar: true }), 1]);
-        await dbAsync.run(insertPlan, ['باقة شهرية', 30, 299, 0, JSON.stringify({ prayer_times: true, adhkar: true, support: true }), 5]);
-        await dbAsync.run(insertPlan, ['باقة سنوية', 365, 2999, 0, JSON.stringify({ prayer_times: true, adhkar: true, support: true }), 10]);
+        await dbAsync.run(insertPlan, ['باقة شهرية', 30, 299, 0, JSON.stringify({ prayer_times: true, adhkar: true, support: true }), 1]);
+        await dbAsync.run(insertPlan, ['باقة سنوية', 365, 1999, 0, JSON.stringify({ prayer_times: true, adhkar: true, support: true }), 1]);
     } else {
-        // Update existing plans with new default limits
-        console.log('Updating existing plans limits...');
-        await dbAsync.run("UPDATE plans SET max_sessions = 1 WHERE name LIKE '%تجريبية%' OR is_trial = 1");
-        await dbAsync.run("UPDATE plans SET max_sessions = 5 WHERE name LIKE '%شهرية%'");
-        await dbAsync.run("UPDATE plans SET max_sessions = 10 WHERE name LIKE '%سنوية%'");
+        // Update existing plans with new default limits (Enforcing 1 session as per user request)
+        console.log('Enforcing 1 session limit across all plans...');
+        await dbAsync.run("UPDATE plans SET max_sessions = 1");
     }
 
     // Seed Default Admin Tabs

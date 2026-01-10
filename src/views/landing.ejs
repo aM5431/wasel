@@ -169,23 +169,80 @@
                                                         <p style="color: var(--text-muted); margin-bottom: 20px;">كل <%=
                                                                 plan.duration_days %> يوم</p>
 
-                                                        <ul>
+                                                        <ul class="plan-features">
                                                             <% const feats=JSON.parse(plan.features || '{}' ); %>
-                                                                <li>
-                                                                    <i class="fas fa-check-circle text-primary"></i>
-                                                                    <span>مواقيت الصلاة: <%= feats.prayer_times ? 'نعم'
-                                                                            : 'لا' %></span>
-                                                                </li>
-                                                                <li>
-                                                                    <i class="fas fa-check-circle text-primary"></i>
-                                                                    <span>الأذكار: <%= feats.adhkar ? 'نعم' : 'لا' %>
-                                                                    </span>
-                                                                </li>
-                                                                <li>
-                                                                    <i
-                                                                        class="fas fa-check-circle <%= feats.support ? 'text-primary' : 'text-disabled' %>"></i>
-                                                                    <span>دعم فني وتحديثات</span>
-                                                                </li>
+                                                                <% if (feats.prayer_times) { %>
+                                                                    <li><i class="fas fa-mosque text-primary"></i>
+                                                                        <span>مواقيت الصلاة</span></li>
+                                                                    <% } %>
+                                                                        <% if (feats.adhkar) { %>
+                                                                            <li><i
+                                                                                    class="fas fa-book-open text-primary"></i>
+                                                                                <span>الأذكار اليومية</span></li>
+                                                                            <% } %>
+                                                                                <% if (feats.morning_evening) { %>
+                                                                                    <li><i
+                                                                                            class="fas fa-cloud-sun text-primary"></i>
+                                                                                        <span>أذكار الصباح
+                                                                                            والمساء</span></li>
+                                                                                    <% } %>
+                                                                                        <% if
+                                                                                            (feats.before_after_prayer)
+                                                                                            { %>
+                                                                                            <li><i
+                                                                                                    class="fas fa-hands-praying text-primary"></i>
+                                                                                                <span>أذكار
+                                                                                                    الصلاة</span></li>
+                                                                                            <% } %>
+                                                                                                <% if (feats.quran) { %>
+                                                                                                    <li><i
+                                                                                                            class="fas fa-quran text-primary"></i>
+                                                                                                        <span>القرآن
+                                                                                                            الكريم</span>
+                                                                                                    </li>
+                                                                                                    <% } %>
+                                                                                                        <% if
+                                                                                                            (feats.hadith)
+                                                                                                            { %>
+                                                                                                            <li><i
+                                                                                                                    class="fas fa-scroll text-primary"></i>
+                                                                                                                <span>الحديث
+                                                                                                                    الشريف</span>
+                                                                                                            </li>
+                                                                                                            <% } %>
+                                                                                                                <% if
+                                                                                                                    (feats.fasting)
+                                                                                                                    { %>
+                                                                                                                    <li><i
+                                                                                                                            class="fas fa-moon text-primary"></i>
+                                                                                                                        <span>تذكير
+                                                                                                                            الصيام</span>
+                                                                                                                    </li>
+                                                                                                                    <% }
+                                                                                                                        %>
+                                                                                                                        <% if
+                                                                                                                            (feats.rosary)
+                                                                                                                            {
+                                                                                                                            %>
+                                                                                                                            <li><i
+                                                                                                                                    class="fas fa-ring text-primary"></i>
+                                                                                                                                <span>السبحة
+                                                                                                                                    الإلكترونية</span>
+                                                                                                                            </li>
+                                                                                                                            <% }
+                                                                                                                                %>
+                                                                                                                                <% if
+                                                                                                                                    (feats.support)
+                                                                                                                                    {
+                                                                                                                                    %>
+                                                                                                                                    <li><i
+                                                                                                                                            class="fas fa-headset text-primary"></i>
+                                                                                                                                        <span>دعم
+                                                                                                                                            فني
+                                                                                                                                            وتحديثات</span>
+                                                                                                                                    </li>
+                                                                                                                                    <% }
+                                                                                                                                        %>
                                                         </ul>
 
                                                         <a href="/register?plan=<%= plan.id %>"
@@ -233,7 +290,8 @@
                 <i class="fab fa-whatsapp" style="font-size: 2rem; color: var(--text-muted);"></i>
             </div>
 
-            <% if (typeof settings !== 'undefined' && settings.contact && (settings.contact.whatsapp || settings.contact.email)) { %>
+            <% if (typeof settings !=='undefined' && settings.contact && (settings.contact.whatsapp ||
+                settings.contact.email)) { %>
                 <div class="footer-contact" style="margin-bottom: 20px;">
                     <% if (settings.contact.whatsapp) { %>
                         <p style="margin: 5px 0;">
@@ -253,7 +311,8 @@
                 </div>
                 <% } %>
 
-                    <p>&copy; 2024 جميع الحقوق محفوظة لمنصة <%= typeof settings !== 'undefined' && settings.brand ? settings.brand.name : 'واتساب بوت' %>.
+                    <p>&copy; 2024 جميع الحقوق محفوظة لمنصة <%= typeof settings !=='undefined' && settings.brand ?
+                            settings.brand.name : 'واتساب بوت' %>.
                     </p>
                     <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: center;">
                         <a href="#" style="color: var(--text-muted);"><i class="fab fa-twitter"></i></a>

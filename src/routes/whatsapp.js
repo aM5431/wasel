@@ -4,6 +4,7 @@ const sessionManager = require('../services/baileys/SessionManager');
 const messageService = require('../services/baileys/MessageService');
 const { db } = require('../database/db');
 const connectionStability = require('../middleware/connectionStability');
+const AuthService = require('../services/auth');
 
 // Helper to check session ownership
 const checkSessionOwner = async (req, sessionId) => {
@@ -63,19 +64,43 @@ router.get('/test', async (req, res) => {
     }
 });
 
-// Get all sessions (Admins get all, Users get theirs)
+// Get all sessions (Admins get all by default or filtered, Users get theirs)
 router.get('/list', requireAuth, async (req, res) => {
     try {
         let dbSessions;
+        const targetUserId = req.query.userId;
+        const showAll = req.query.all === 'true' && req.user.role === 'admin';
 
         if (req.user.role === 'admin') {
-            dbSessions = await db.all(`
-                SELECT ws.*, u.name as user_name, u.phone as user_phone 
-                FROM whatsapp_sessions ws
-                LEFT JOIN users u ON ws.user_id = u.id
-                ORDER BY ws.created_at DESC
-            `);
+            if (showAll) {
+                // Get ALL sessions across the platform
+                dbSessions = await db.all(`
+                    SELECT ws.*, u.name as user_name, u.phone as user_phone 
+                    FROM whatsapp_sessions ws
+                    LEFT JOIN users u ON ws.user_id = u.id
+                    ORDER BY ws.created_at DESC
+                `);
+            } else if (targetUserId) {
+                // Get sessions for a SPECIFIC user
+                dbSessions = await db.all(`
+                    SELECT ws.*, u.name as user_name, u.phone as user_phone 
+                    FROM whatsapp_sessions ws
+                    LEFT JOIN users u ON ws.user_id = u.id
+                    WHERE ws.user_id = ?
+                    ORDER BY ws.created_at DESC
+                `, [targetUserId]);
+            } else {
+                // Default Admin View: ONLY Admin's own sessions
+                dbSessions = await db.all(`
+                    SELECT ws.*, u.name as user_name, u.phone as user_phone 
+                    FROM whatsapp_sessions ws
+                    LEFT JOIN users u ON ws.user_id = u.id
+                    WHERE ws.user_id = ?
+                    ORDER BY ws.created_at DESC
+                `, [req.user.id]);
+            }
         } else {
+            // Regular User: Only their own
             dbSessions = await db.all(`
                 SELECT ws.*, u.name as user_name, u.phone as user_phone 
                 FROM whatsapp_sessions ws
@@ -117,13 +142,15 @@ router.get('/status/:sessionId', async (req, res) => {
 
         const isConnected = sessionManager.isConnected(sessionId);
         const sessionInfo = sessionManager.getSessionInfo(sessionId);
-        const hasQR = !!sessionManager.getQRCode(sessionId);
+        const qrCode = isConnected ? null : sessionManager.getQRCode(sessionId);
+        const hasQR = !!qrCode;
 
         res.json({
             success: true,
             connected: isConnected,
             sessionInfo,
-            hasQR
+            hasQR,
+            qrCode
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -214,11 +241,12 @@ router.post('/connect', connectionStability, requireAuth, async (req, res) => {
         // Generate new session ID if not provided
         if (!sessionId) {
             sessionId = `user_${userId}_${Date.now()}`;
+            const normalizedPhoneNumber = phoneNumber ? AuthService.normalizePhone(phoneNumber) : null;
 
             try {
                 await db.run(
                     'INSERT INTO whatsapp_sessions (session_id, user_id, device_type, name, webhook_url, phone_number) VALUES (?, ?, ?, ?, ?, ?)',
-                    [sessionId, userId, deviceType || 'web', sessionName || 'Default Session', webhookUrl || null, phoneNumber || null]
+                    [sessionId, userId, deviceType || 'web', sessionName || 'Default Session', webhookUrl || null, normalizedPhoneNumber]
                 );
             } catch (dbError) {
                 console.error('Database error:', dbError);
@@ -240,19 +268,11 @@ router.post('/connect', connectionStability, requireAuth, async (req, res) => {
             });
         }
 
-        // Check for existing sessions for this user and delay cleanup
-        const existingSessions = sessionManager.getAllSessions()
-            .filter(s => s.sessionId.includes(userId));
+        // Check for existing sessions for this user and cleanup
+        const userSessions = await db.all('SELECT session_id FROM whatsapp_sessions WHERE user_id = ?', [userId]);
 
-        if (existingSessions.length > 0) {
-            setTimeout(() => {
-                existingSessions.forEach(s => {
-                    if (s.sessionId !== sessionId && !s.connected) {
-                        sessionManager.removeSession(s.sessionId);
-                    }
-                });
-            }, 10000);
-        }
+        // If user already has other sessions (and max_sessions is 1), we should probably block here too 
+        // but the limit check above handles NEW sessions. For existing sessions, we just continue.
 
         // Enhanced session creation with security improvements
         try {
@@ -264,27 +284,54 @@ router.post('/connect', connectionStability, requireAuth, async (req, res) => {
                 onConnected: async (info) => {
                     console.log(`Session ${sessionId} securely connected`);
                     try {
-                        await db.run('UPDATE whatsapp_sessions SET connected = 1 WHERE session_id = ?', [sessionId]);
+                        const normalizedConnectedPhone = AuthService.normalizePhone(info.phoneNumber);
+
+                        // Check if this phone number is used by ANOTHER user
+                        const duplicateSession = await db.get(`
+                            SELECT ws.session_id, ws.user_id, u.name as owner_name 
+                            FROM whatsapp_sessions ws
+                            JOIN users u ON ws.user_id = u.id
+                            WHERE ws.phone_number = ? AND ws.user_id != ?
+                        `, [normalizedConnectedPhone, userId]);
+
+                        if (duplicateSession) {
+                            console.warn(`🚨 Duplicate WhatsApp number detected! ${normalizedConnectedPhone} belongs to user ${duplicateSession.user_id}`);
+
+                            // Send warning message and disconnect
+                            try {
+                                const warning = `❌ *تنبيه أمني*
+هذا الرقم مرتبط بالفعل بحساب آخر على المنصة.
+لا يمكن ربط نفس الرقم بأكثر من حساب.
+تم فصل الجلسة تلقائياً.`;
+                                await messageService.sendMessage(sessionId, info.phoneNumber, warning);
+                            } catch (e) { }
+
+                            await sessionManager.disconnectSession(sessionId);
+                            await db.run('UPDATE whatsapp_sessions SET connected = 0 WHERE session_id = ?', [sessionId]);
+                            return;
+                        }
+
+                        await db.run('UPDATE whatsapp_sessions SET connected = 1, phone_number = ? WHERE session_id = ?', [normalizedConnectedPhone, sessionId]);
 
                         // Send welcome message if phone number is provided
-                        if (phoneNumber) {
+                        if (info.phoneNumber) {
                             setTimeout(async () => {
                                 try {
                                     if (!sessionManager.isConnected(sessionId)) return;
 
-                                    const welcomeMessage = `🎉 مرحباً بك في منصة واتساب!
+                                    const welcomeMessage = `🎉 مرحباً بك في منصة واصل!
 
 ✅ تم ربط جلسة "${sessionName || 'الجلسة الجديدة'}" بنجاح
-📱 رقم الهاتف: ${phoneNumber}
+📱 رقم الهاتف المرتبط: ${info.phoneNumber}
 ⏰ وقت الاتصال: ${new Date().toLocaleString('ar-EG')}
 
 🔥 الآن يمكنك استخدام جميع مميزات المنصة!
 
 💬 هذه رسالة تلقائية للتأكيد`;
 
-                                    await messageService.sendMessage(sessionId, phoneNumber, welcomeMessage);
+                                    await messageService.sendMessage(sessionId, info.phoneNumber, welcomeMessage);
                                 } catch (msgError) {
-                                    console.error(`❌ Failed to send welcome message to ${phoneNumber}:`, msgError.message);
+                                    console.error(`❌ Failed to send welcome message to ${info.phoneNumber}:`, msgError.message);
                                 }
                             }, 5000);
                         }

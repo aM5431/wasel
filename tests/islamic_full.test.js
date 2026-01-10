@@ -75,7 +75,8 @@ describe('Islamic Full Audit', () => {
 
         test('should handle missing coordinates gracefully', async () => {
             const result = await PrayerTimesService.getPrayerTimes({});
-            expect(result).toBeNull();
+            expect(result).toBeDefined();
+            expect(result.is_manual).toBe(true);
         });
     });
 

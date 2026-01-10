@@ -25,11 +25,9 @@ class QuranService {
 
         const imageUrls = [];
         // Using a reliable GitHub raw source for Quran pages (Madani)
-        // Adjust padding for page number (e.g. 001, 012, 123)
         for (let page = startPage; page <= endPage; page++) {
-            const paddedPage = String(page).padStart(3, '0');
-            // Source: https://github.com/opus-bd/quran-pages (Public Repo)
-            imageUrls.push(`https://raw.githubusercontent.com/opus-bd/quran-pages/master/images/page${paddedPage}.png`);
+            // Source: https://github.com/Five-Prayers/quran-pages (Public Repo)
+            imageUrls.push(`https://raw.githubusercontent.com/Five-Prayers/quran-pages/main/quran_pages/${page}.png`);
         }
 
         return {
@@ -38,6 +36,11 @@ class QuranService {
             endPage,
             images: imageUrls
         };
+    }
+
+    getRandomPageImage() {
+        const page = Math.floor(Math.random() * 604) + 1;
+        return `https://raw.githubusercontent.com/Five-Prayers/quran-pages/main/quran_pages/${page}.png`;
     }
 }
 

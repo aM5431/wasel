@@ -5,6 +5,9 @@ const bcrypt = require('bcrypt');
 const AuditService = require('../services/AuditService');
 const path = require('path');
 const fs = require('fs');
+const NotificationService = require('../services/NotificationService');
+const AuthService = require('../services/auth');
+const sessionManager = require('../services/baileys/SessionManager');
 
 // Middleware to check admin role
 const requireAdmin = (req, res, next) => {
@@ -23,7 +26,8 @@ router.get('/users', requireAdmin, async (req, res) => {
         const { startDate, endDate } = req.query;
         let sql = `
             SELECT u.id, u.name, u.email, u.phone, u.role, u.created_at,
-                   s.status as subscription_status, p.name as plan_name
+                   s.status as subscription_status, p.name as plan_name,
+                   s.start_date as subscription_start, s.end_date as subscription_end
             FROM users u
             LEFT JOIN subscriptions s ON u.id = s.user_id
             LEFT JOIN plans p ON s.plan_id = p.id
@@ -49,7 +53,67 @@ router.get('/users', requireAdmin, async (req, res) => {
         sql += " ORDER BY u.created_at DESC";
 
         const users = await db.all(sql, params);
-        res.json(users);
+
+        // Process users to add remaining days and special admin status
+        const processedUsers = users.map(user => {
+            // Admin users are always premium
+            if (user.role === 'admin') {
+                user.subscription_status = 'premium_admin';
+                user.plan_name = '⭐ مدير النظام';
+                user.remaining_days = '∞';
+            } else if (user.subscription_end) {
+                const endDate = new Date(user.subscription_end);
+                const today = new Date();
+                const diffTime = endDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                user.remaining_days = diffDays > 0 ? diffDays : 0;
+            } else {
+                user.remaining_days = null;
+            }
+            return user;
+        });
+
+        res.json(processedUsers);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get admin notifications
+router.get('/notifications', requireAdmin, async (req, res) => {
+    try {
+        const notifications = await db.all(`
+            SELECT * FROM notifications 
+            WHERE user_id = ? 
+            ORDER BY created_at DESC LIMIT 50
+        `, [req.user.id]);
+        res.json(notifications);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Mark notification as read
+router.post('/notifications/:id/read', requireAdmin, async (req, res) => {
+    try {
+        await db.run(
+            'UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Mark all as read
+router.post('/notifications/read-all', requireAdmin, async (req, res) => {
+    try {
+        await db.run(
+            'UPDATE notifications SET is_read = 1 WHERE user_id = ?',
+            [req.user.id]
+        );
+        res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -58,7 +122,9 @@ router.get('/users', requireAdmin, async (req, res) => {
 // Update user
 router.put('/users/:id', requireAdmin, async (req, res) => {
     try {
-        const { name, email, phone } = req.body;
+        let { name, email, phone } = req.body;
+        phone = AuthService.normalizePhone(phone);
+
         await db.run(
             'UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?',
             [name, email, phone, req.params.id]
@@ -92,8 +158,39 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
             });
         }
 
+        // 1. Delete and cleanup WhatsApp Sessions
+        const sessions = await db.all('SELECT session_id FROM whatsapp_sessions WHERE user_id = ?', [req.params.id]);
+        for (const session of sessions) {
+            try {
+                await sessionManager.removeSession(session.session_id);
+            } catch (e) {
+                console.error(`Error removing session ${session.session_id} during user deletion:`, e);
+            }
+        }
+        await db.run('DELETE FROM whatsapp_sessions WHERE user_id = ?', [req.params.id]);
+
+        // 2. Delete Islamic Reminders data
+        const irConfig = await db.get('SELECT id FROM islamic_reminders_config WHERE user_id = ?', [req.params.id]);
+        if (irConfig) {
+            await db.run('DELETE FROM reminder_recipients WHERE config_id = ?', [irConfig.id]);
+            await db.run('DELETE FROM prayer_settings WHERE config_id = ?', [irConfig.id]);
+            await db.run('DELETE FROM fasting_settings WHERE config_id = ?', [irConfig.id]);
+            await db.run('DELETE FROM adhkar_settings WHERE config_id = ?', [irConfig.id]);
+            await db.run('DELETE FROM scheduled_reminders WHERE config_id = ?', [irConfig.id]);
+            await db.run('DELETE FROM islamic_reminders_config WHERE id = ?', [irConfig.id]);
+        }
+
+        // 3. Delete other related data
         await db.run('DELETE FROM subscriptions WHERE user_id = ?', [req.params.id]);
+        await db.run('DELETE FROM payments WHERE user_id = ?', [req.params.id]);
+        await db.run('DELETE FROM notifications WHERE user_id = ?', [req.params.id]);
+
+        // 4. Finally delete the user
         await db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
+
+        // Log the action
+        await AuditService.log(req.user.id, 'DELETE_USER', `تم حذف المستخدم ${user.email} وكافة بياناته المرتبطة`);
+
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -113,6 +210,31 @@ router.get('/subscriptions', requireAdmin, async (req, res) => {
             ORDER BY s.created_at DESC
         `);
         res.json(subs);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update user subscription manually
+router.put('/users/:id/subscription', requireAdmin, async (req, res) => {
+    try {
+        const { startDate, endDate, status } = req.body;
+
+        // Check if user has a subscription
+        const sub = await db.get('SELECT * FROM subscriptions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1', [req.params.id]);
+
+        if (!sub) {
+            // Need to insert a new one if not exists (handling edge case)
+            // For now, assuming user has at least one subscription or we error out
+            return res.status(404).json({ error: 'User has no subscription record to update.' });
+        }
+
+        await db.run(
+            'UPDATE subscriptions SET start_date = ?, end_date = ?, status = ? WHERE id = ?',
+            [startDate, endDate, status, sub.id]
+        );
+
+        res.json({ success: true, message: 'Subscription updated successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -268,11 +390,21 @@ router.delete('/plans/:id', requireAdmin, async (req, res) => {
 router.get('/stats', requireAdmin, async (req, res) => {
     try {
         const totalUsers = await db.get('SELECT COUNT(*) as count FROM users WHERE role = "user"');
-        const activeSubscriptions = await db.get('SELECT COUNT(*) as count FROM subscriptions WHERE status = "active"');
-        const pendingSubscriptions = await db.get('SELECT COUNT(*) as count FROM subscriptions WHERE status = "pending"');
+        const totalAdmins = await db.get('SELECT COUNT(*) as count FROM users WHERE role = "admin"');
+        const activeSubscriptions = await db.get(`
+            SELECT COUNT(*) as count FROM subscriptions s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.status = "active" AND u.role = "user"
+        `);
+        const pendingSubscriptions = await db.get(`
+            SELECT COUNT(*) as count FROM subscriptions s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.status = "pending" AND u.role = "user"
+        `);
 
         res.json({
             totalUsers: totalUsers.count,
+            totalAdmins: totalAdmins.count,
             activeSubscriptions: activeSubscriptions.count,
             pendingSubscriptions: pendingSubscriptions.count
         });
@@ -391,10 +523,6 @@ router.put('/payments/:id/approve', requireAdmin, async (req, res) => {
         // Let's check PaymentService impl. It inserted into payments table without plan_id.
         // It relies on "creating specific subscription" logic which was commented out in PaymentService.
 
-        // CORRECTION: We need to find the pending subscription for this user to activate it.
-        // OR we should have stored subscription_id in payments table.
-        // PaymentService.js: createPaymentRequest receive planId but didn't use it effectively to link specific sub.
-
         // Recovery Logic: Find the latest PENDING subscription for this user.
         const subscription = await db.get(`
             SELECT * FROM subscriptions 
@@ -416,25 +544,14 @@ router.put('/payments/:id/approve', requireAdmin, async (req, res) => {
             // Update payment with sub id if missing
             await db.run('UPDATE payments SET subscription_id = ? WHERE id = ?', [subscription.id, req.params.id]);
 
-            // Notify User via WhatsApp (using NotificationService or MessageService)
-            // Implementation detail: NotificationService.sendPaymentApproved(...)
-            const NotificationService = require('../services/NotificationService');
-            // We need to implement sendPaymentApproved in NotificationService first, or just send raw message here.
-            // Let's send raw message for now to save time, or better, add to NotificationService later.
-
+            // Notify User via WhatsApp
             const user = await db.get('SELECT * FROM users WHERE id = ?', [payment.user_id]);
-            const messageService = require('../services/baileys/MessageService');
-            const adminSessionId = await NotificationService.getAdminSession();
 
-            if (adminSessionId) {
-                const msg = `🎉 *تم قبول الدفع وتفعيل الاشتراك!*
-
-أهلاً بك يا ${user.name} 👋
-تم استلام دفعتك بقيمة ${payment.amount} بنجاح.
-
-✅ *باقتك الان نشطة*
-استمتع بخدماتنا! 🌹`;
-                await messageService.sendMessage(adminSessionId, user.phone, msg);
+            // Send activation message
+            if (user) {
+                NotificationService.sendSubscriptionActivated(user, plan.name, endDate)
+                    .then(() => console.log(`✅ Activation notification sent to ${user.phone}`))
+                    .catch(err => console.error('⚠️ Failed to send activation notification:', err));
             }
         }
 
@@ -459,7 +576,6 @@ router.put('/payments/:id/reject', requireAdmin, async (req, res) => {
             console.log(`[AdminAPI] Found payment for user ${payment.user_id}, sending notification...`);
             const user = await db.get('SELECT * FROM users WHERE id = ?', [payment.user_id]);
             if (user) {
-                const NotificationService = require('../services/NotificationService');
                 // Await to catch any local errors, though we catch in the handler too
                 await NotificationService.sendPaymentRejected(user, reason).catch(err => {
                     console.error('[AdminAPI] Notification service error:', err);
@@ -530,8 +646,9 @@ router.put('/profile', requireAdmin, async (req, res) => {
 
         // Only update phone if provided and not empty
         if (phone && phone.trim() !== '') {
+            const normalizedPhone = AuthService.normalizePhone(phone);
             sql += ', phone = ?';
-            params.push(phone.trim());
+            params.push(normalizedPhone);
         }
 
         sql += ' WHERE id = ?';

@@ -1,4 +1,5 @@
 const axios = require('axios');
+const IslamicVideoService = require('./IslamicVideoService');
 
 class ExternalContentService {
 
@@ -34,18 +35,12 @@ class ExternalContentService {
         return images[Math.floor(Math.random() * images.length)];
     }
 
-    static getRandomVideo() {
-        // Curated short Islamic/Nature clips (Pexels/Pixabay - direct MP4 URLs)
-        // These are public domian/free to use URLs.
-        // For a real prod app, use Pexels API Key. For this demo, we can use a few sample clips.
-        const videos = [
-            'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4', // Cheerful/General
-            'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', // Nature/Fast
-            'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4', // Nature/Water
-            'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4' // Nature/Drive
-            // Note: In production, user should host their own specific Islamic content clips on S3/Cloudinary
-        ];
-        return videos[Math.floor(Math.random() * videos.length)];
+    static getRandomIslamicBackgroundImage() {
+        return this.getRandomImage();
+    }
+
+    static async getRandomVideo() {
+        return await IslamicVideoService.getIslamicVideoUrl();
     }
 
     static async getDailyContent(preference = 'mixed', type = 'general', category = 'general') {
@@ -66,27 +61,27 @@ class ExternalContentService {
 
         // Fetch context-aware content
         if (type === 'adhkar') {
-            // TODO: In a real app, use an API for Adhkar. For now, use fixed snippets based on category.
             const adhkarSnippets = {
                 morning: [
-                    "أصبـحـنا وأصبـح المـلك لله والحمد لله، لا إله إلا الله وحده لا شريك له.",
-                    "اللهم بك أصبحنا وبك أمسينا وبك نحيا وبك نموت وإليك النشور.",
-                    "سبحان الله وبحمده، عدد خلقه، ورضا نفسه، وزنة عرشه، ومداد كلماته."
+                    { content: "أصبحنا وأصبح الملك لله، والحمد لله، لا إله إلا الله وحده لا شريك له، له الملك وله الحمد وهو على كل شيء قدير، رب أسألك خير ما في هذا اليوم وخير ما بعده، وأعوذ بك من شر ما في هذا اليوم وشر ما بعده، رب أعوذ بك من الكسل وسوء الكبر، رب أعوذ بك من عذاب في النار وعذاب في القبر.", source: "صحيح مسلم" },
+                    { content: "اللهم بك أصبحنا، وبك أمسينا، وبك نحيا، وبك نموت، وإليك النشور.", source: "سنن الترمذي" },
+                    { content: "اللهم أنت ربي لا إله إلا أنت، خلقتني وأنا عبدك، وأنا على عهدك ووعدك ما استطعت، أعوذ بك من شر ما صنعت، أبوء لك بنعمتك علي، وأبوء بذنبي فاغفر لي فإنه لا يغفر الذنوب إلا أنت.", source: "صحيح البخاري (سيد الاستغفار)" }
                 ],
                 evening: [
-                    "أمسـينا وأمسـى المـلك لله والحمد لله، لا إله إلا الله وحده لا شريك له.",
-                    "اللهم بك أمسينا وبك أصبحنا وبك نحيا وبك نموت وإليك المصير.",
-                    "أعوذ بكلمات الله التامات من شر ما خلق."
+                    { content: "أمسينا وأمسى الملك لله، والحمد لله، لا إله إلا الله وحده لا شريك له، له الملك وله الحمد وهو على كل شيء قدير، رب أسألك خير ما في هذه الليلة وخير ما بعدها، وأعوذ بك من شر ما في هذه الليلة وشر ما بعدها، رب أعوذ بك من الكسل وسوء الكبر، رب أعوذ بك من عذاب في النار وعذاب في القبر.", source: "صحيح مسلم" },
+                    { content: "اللهم بك أمسينا، وبك أصبحنا، وبك نحيا، وبك نموت، وإليك المصير.", source: "سنن الترمذي" },
+                    { content: "أعوذ بكلمات الله التامات من شر ما خلق.", source: "صحيح مسلم" }
                 ],
                 general: [
-                    "لا إله إلا الله وحد لا شريك له، له الملك وله الحمد وهو على كل شيء قدير.",
-                    "سبحان الله وبحمده، سبحان الله العظيم."
+                    { content: "لا إله إلا الله وحده لا شريك له، له الملك وله الحمد، وهو على كل شيء قدير.", source: "متفق عليه" },
+                    { content: "سبحان الله وبحمده، عدد خلقه، ورضا نفسه، وزنة عرشه، ومداد كلماته.", source: "صحيح مسلم" },
+                    { content: "اللهم صل وسلم وبارك على نبينا محمد.", source: "ذكر" }
                 ]
             };
             const list = adhkarSnippets[category] || adhkarSnippets.general;
-            contentText = list[Math.floor(Math.random() * list.length)];
-            contentSource = (category === 'morning' ? 'أذكار الصباح' : (category === 'evening' ? 'أذكار المساء' : 'ذكر'));
-
+            const item = list[Math.floor(Math.random() * list.length)];
+            contentText = item.content;
+            contentSource = item.source;
         } else {
             // Default: Random Hadith
             const hadith = await this.getRandomHadith();
@@ -105,15 +100,24 @@ class ExternalContentService {
         let mediaType = 'image';
 
         if (useVideo) {
-            mediaUrl = this.getRandomVideo();
+            mediaUrl = await this.getRandomVideo();
             mediaType = 'video';
         } else {
             mediaUrl = this.getRandomImage();
             mediaType = 'image';
         }
 
+        let finalType = type;
+        if (!type || type === 'general') {
+             if (contentSource === 'ذكر' || (contentText && contentText.includes('سبحان الله'))) {
+                 finalType = 'adhkar';
+             } else {
+                 finalType = 'hadith';
+             }
+        }
+
         return {
-            type: type || 'hadith',
+            type: finalType,
             content: contentText,
             source: contentSource,
             media_url: mediaUrl,

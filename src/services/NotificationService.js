@@ -281,6 +281,25 @@ ${reasonText}
             return false;
         }
     }
+
+    /**
+     * Create a notification in the database for all admin users
+     */
+    async createAdminNotification(title, message, type = 'info') {
+        try {
+            const admins = await db.all('SELECT id FROM users WHERE role = "admin"');
+            for (const admin of admins) {
+                await db.run(
+                    'INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)',
+                    [admin.id, title, message, type]
+                );
+            }
+            return true;
+        } catch (error) {
+            console.error('[NotificationService] Error creating admin notification:', error);
+            return false;
+        }
+    }
 }
 
 module.exports = new NotificationService();

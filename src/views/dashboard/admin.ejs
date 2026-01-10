@@ -398,7 +398,220 @@
             max-width: 500px;
             width: 90%;
             max-height: 80vh;
+
             overflow-y: auto;
+        }
+
+        /* --- QR POPUP CSS (From User Dashboard) --- */
+        .qr-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-popup.active {
+            display: flex;
+        }
+
+        .qr-content {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* --- TOAST NOTIFICATIONS CSS --- */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 280px;
+            max-width: 400px;
+            border-right: 4px solid var(--primary);
+            animation: slideIn 0.3s ease-out;
+            font-weight: 500;
+        }
+
+        .toast.success {
+            border-right-color: #4caf50;
+        }
+
+        .toast.error {
+            border-right-color: #f44336;
+        }
+
+        .toast.info {
+            border-right-color: var(--primary);
+        }
+
+        .toast i {
+            font-size: 1.2rem;
+        }
+
+        .toast.success i {
+            color: #4caf50;
+        }
+
+        .toast.error i {
+            color: #f44336;
+        }
+
+        .toast.info i {
+            color: var(--primary);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* --- RESPONSIVE TABLES CSS (Matching User Dashboard) --- */
+        @media (max-width: 768px) {
+            .data-table thead {
+                display: none;
+                /* Hide headers on mobile */
+            }
+
+            .data-table,
+            .data-table tbody,
+            .data-table tr,
+            .data-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .data-table tr {
+                margin-bottom: 15px;
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 15px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            }
+
+            .data-table td {
+                border: none;
+                border-bottom: 1px solid var(--border);
+                position: relative;
+                padding-right: 50% !important;
+                padding-left: 10px;
+                text-align: left;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+            }
+
+            .data-table td {
+                display: block;
+                text-align: left;
+            }
+
+            .data-table td:last-child {
+                border-bottom: none;
+                padding-right: 10px !important;
+                text-align: center;
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                padding-bottom: 0;
+            }
+
+            .data-table td::before {
+                content: attr(data-label);
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                width: 45%;
+                white-space: nowrap;
+                font-weight: bold;
+                color: var(--text-muted);
+                text-align: right;
+            }
+
+            /* Special case for Actions column */
+            .data-table td[data-label="الإجراءات"]::before,
+            .data-table td:last-child::before {
+                display: none;
+            }
+
+            /* Responsive Utilities */
+            .card {
+                padding: 1rem !important;
+            }
+
+            .modal-content {
+                padding: 1.5rem !important;
+                width: 95% !important;
+            }
+
+            /* Sessions Page Specifics */
+            .session-card-mobile {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
         }
 
         .modal-header {
@@ -875,9 +1088,12 @@
                     <i class="fab fa-whatsapp"></i>
                     <span>جلساتي</span>
                 </div>
-                <div class="admin-nav-item" onclick="switchTab('payments')" data-tooltip="طلبات التفعيل">
+                <div class="admin-nav-item" onclick="switchTab('payments')" data-tooltip="طلبات التفعيل"
+                    style="position: relative;">
                     <i class="fas fa-money-bill-wave"></i>
                     <span>طلبات التفعيل</span>
+                    <span id="payments-badge"
+                        style="position: absolute; top: 10px; left: 10px; background: #f44336; color: white; border-radius: 50%; width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold; border: 2px solid var(--bg-card);">0</span>
                 </div>
 
                 <div class="admin-nav-item" onclick="switchTab('users')" data-tooltip="إدارة المستخدمين">
@@ -958,8 +1174,12 @@
                         <div id="notifications-dropdown"
                             style="position: absolute; top: calc(100% + 8px); left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); width: 350px; max-height: 400px; overflow-y: auto; display: none; box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 1000;">
                             <div
-                                style="padding: 1rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-main);">
-                                الإشعارات</div>
+                                style="padding: 1rem; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-main); display: flex; justify-content: space-between; align-items: center;">
+                                <span>الإشعارات</span>
+                                <button onclick="markAllNotificationsAsRead()"
+                                    style="background: none; border: none; color: var(--primary); font-size: 0.75rem; cursor: pointer; font-weight: 600;">تحديد
+                                    الكل كمقروء</button>
+                            </div>
                             <div id="notifications-list" style="max-height: 300px; overflow-y: auto;">
                                 <div style="padding: 1rem; text-align: center; color: var(--text-muted);">لا توجد
                                     إشعارات حالياً</div>
@@ -1028,6 +1248,28 @@
                             </p>
                         </div>
                     </div>
+
+                    <!-- Admin Count Card -->
+                    <div class="stat-box" style="position: relative; overflow: hidden;">
+                        <div
+                            style="position: absolute; top: 10px; right: 10px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #FF9800, #F57C00); opacity: 0.1;">
+                        </div>
+                        <div style="position: relative; z-index: 1;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                <h3 style="margin: 0; font-size: 0.9rem;">إجمالي المديرين</h3>
+                                <div
+                                    style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: #FFF3E0; display: flex; align-items: center; justify-content: center; color: #FF9800;">
+                                    <i class="fas fa-user-shield" style="font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            <div class="number" id="stat-admins" style="color: #FF9800; margin-bottom: 0.5rem;">0</div>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+                                <i class="fas fa-shield-alt" style="color: #FF9800; margin-left: 4px;"></i>
+                                مديرين النظام
+                            </p>
+                        </div>
+                    </div>
                     <div class="stat-box" style="position: relative; overflow: hidden;">
                         <div
                             style="position: absolute; top: 10px; right: 10px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #4CAF50, #45a049); opacity: 0.1;">
@@ -1084,6 +1326,19 @@
                     العودة إلى لوحة المعلومات
                 </button>
                 <h1 style="margin-bottom: 1.5rem; color: var(--text-main);">إدارة المستخدمين</h1>
+                
+                <!-- Quick Access Admin Sessions -->
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); border-right: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 style="margin: 0; color: var(--text-main); font-size: 1rem;">
+                            <i class="fas fa-user-shield" style="color: var(--primary);"></i> جلسات المدير (الخاصة بي)
+                        </h4>
+                        <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">إدارة جلسات الواتساب الخاصة بحساب المدير فقط</p>
+                    </div>
+                    <button class="btn" onclick="viewUserSessions('<%= user.id %>', '<%= user.name %>', { email: '<%= user.email %>', phone: '<%= user.phone %>', role: '<%= user.role %>', created_at: '<%= user.created_at %>' })" style="background: var(--primary); color: white;">
+                        <i class="fas fa-history"></i> عرض بياناتي وجلساتي
+                    </button>
+                </div>
 
                 <!-- User Filter Tabs -->
                 <div class="user-filter-tabs"
@@ -1153,6 +1408,9 @@
                             <th>البريد الإلكتروني</th>
                             <th>رقم الهاتف</th>
                             <th>تاريخ الانضمام</th>
+                            <th>تاريخ البدء</th>
+                            <th>تاريخ الانتهاء</th>
+                            <th>المتبقي</th>
                             <th>الصلاحية</th>
                             <th>الباقة</th>
                             <th>حالة الاشتراك</th>
@@ -1431,6 +1689,56 @@
         </main>
     </div>
 
+    <!-- User Sessions Modal -->
+    <div id="user-sessions-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 id="user-sessions-title">جلسات المستخدم</h2>
+                <button class="modal-close" onclick="closeModal('user-sessions-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Profile Info Section (for admin or user details) -->
+                <div id="user-profile-info" style="margin-bottom: 2rem; display: none; padding: 1.5rem; background: var(--bg-secondary); border-radius: var(--radius-md); border-right: 4px solid var(--primary);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">البريد الإلكتروني</label>
+                            <div id="prof-email" style="font-weight: 600; color: var(--text-main);"></div>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">رقم الهاتف</label>
+                            <div id="prof-phone" style="font-weight: 600; color: var(--text-main);"></div>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">تاريخ الانضمام</label>
+                            <div id="prof-date" style="font-weight: 600; color: var(--text-main);"></div>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">الصلاحية</label>
+                            <div id="prof-role" style="font-weight: 600; color: var(--text-main);"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>الجلسة</th>
+                                <th>رقم الهاتف</th>
+                                <th>الحالة</th>
+                                <th>تاريخ الإنشاء</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-sessions-tbody">
+                            <!-- Sessions will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Edit User Modal -->
     <div id="edit-user-modal" class="modal">
         <div class="modal-content">
@@ -1457,6 +1765,152 @@
         </div>
     </div>
 
+    <!-- Edit Subscription Modal -->
+    <div id="edit-subscription-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>تعديل الاشتراك</h2>
+                <button class="modal-close" onclick="closeModal('edit-subscription-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-subscription-form">
+                    <input type="hidden" id="sub-edit-user-id">
+                    <div class="form-group">
+                        <label class="form-label">المستخدم</label>
+                        <input type="text" id="sub-edit-user-name" class="form-control" readonly
+                            style="background: var(--bg-secondary);">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">تاريخ البدء</label>
+                        <input type="datetime-local" id="sub-edit-start" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">تاريخ الانتهاء</label>
+                        <input type="datetime-local" id="sub-edit-end" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الحالة</label>
+                        <select id="sub-edit-status" class="form-control">
+                            <option value="active">نشط (Active)</option>
+                            <option value="pending">قيد المراجعة (Pending)</option>
+                            <option value="expired">منتهي (Expired)</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn"
+                            style="background: var(--bg-secondary); color: var(--text-main);"
+                            onclick="closeModal('edit-subscription-modal')">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirm-modal" class="modal" style="z-index: 2000;">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div style="margin-bottom: 20px;">
+                <i class="fas fa-question-circle" style="font-size: 4rem; color: var(--primary); opacity: 0.8;"></i>
+            </div>
+            <h3 id="confirm-title" style="margin-bottom: 10px; color: var(--text-main);">تأكيد الإجراء</h3>
+            <p id="confirm-message" style="color: var(--text-muted); margin-bottom: 25px; line-height: 1.6;">هل أنت
+                متأكد من إتمام هذا الإجراء؟</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="confirm-btn-yes" class="btn btn-primary" style="min-width: 100px;">نعم، تابع</button>
+                <button id="confirm-btn-no" class="btn btn-outline" style="min-width: 100px;"
+                    onclick="closeModal('confirm-modal')">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Reason Modal -->
+    <div id="reject-modal" class="modal" style="z-index: 2000;">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>سبب الرفض</h2>
+                <button class="modal-close" onclick="closeModal('reject-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-muted); margin-bottom: 15px;">يرجى ذكر سبب الرفض (سيتم إرساله للمستخدم):</p>
+                <textarea id="reject-reason" class="form-control" rows="4" placeholder="مثال: صورة الإيصال غير واضحة..."
+                    style="resize: none;"></textarea>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-outline" onclick="closeModal('reject-modal')">إلغاء</button>
+                    <button id="reject-confirm-btn" class="btn btn-danger">تأكيد الرفض</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"
+        style="position: fixed; bottom: 30px; left: 30px; z-index: 3000; display: flex; flex-direction: column; gap: 10px;">
+    </div>
+
+    <style>
+        .toast {
+            background: var(--bg-card);
+            border-left: 4px solid var(--primary);
+            padding: 15px 20px;
+            border-radius: var(--radius-sm);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            animation: slideInLeft 0.3s ease-out forwards;
+            color: var(--text-main);
+        }
+
+        .toast.success {
+            border-left-color: #25D366;
+        }
+
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+
+        .toast.info {
+            border-left-color: #667eea;
+        }
+
+        .toast-icon {
+            font-size: 1.2rem;
+        }
+
+        .toast.success .toast-icon {
+            color: #25D366;
+        }
+
+        .toast.error .toast-icon {
+            color: #ef4444;
+        }
+
+        .toast.info .toast-icon {
+            color: #667eea;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+        }
+    </style>
+
     <!-- Create Plan Modal -->
     <div id="create-plan-modal" class="modal">
         <div class="modal-content">
@@ -1464,38 +1918,83 @@
                 <h2>إضافة باقة جديدة</h2>
                 <button class="modal-close" onclick="closeModal('create-plan-modal')">&times;</button>
             </div>
-            <form id="create-plan-form">
-                <div class="form-group">
-                    <label class="form-label">اسم الباقة</label>
-                    <input type="text" id="plan-name" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">المدة (بالأيام)</label>
-                    <input type="number" id="plan-duration" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">السعر (جنيه)</label>
-                    <input type="number" id="plan-price" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" id="plan-trial" style="accent-color: var(--primary);">
-                        <span>باقة تجريبية مجانية</span>
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">المميزات</label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
-                        <input type="checkbox" id="feature-prayer" checked style="accent-color: var(--primary);">
-                        <span>مواقيت الصلاة</span>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" id="feature-adhkar" checked style="accent-color: var(--primary);">
-                        <span>الأذكار اليومية</span>
-                    </label>
-                </div>
-                <button type="submit" class="btn" style="width: 100%;">إنشاء الباقة</button>
-            </form>
+            <div class="modal-body">
+                <form id="create-plan-form">
+                    <div class="form-group">
+                        <label class="form-label">اسم الباقة</label>
+                        <input type="text" id="plan-name" class="form-control" required
+                            placeholder="مثال: الباقة الذهبية">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">المدة (بالأيام)</label>
+                            <input type="number" id="plan-duration" class="form-control" required placeholder="30">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">السعر (جنيه)</label>
+                            <input type="number" id="plan-price" class="form-control" required placeholder="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">أقصى عدد جلسات واتساب</label>
+                        <input type="number" id="plan-max-sessions" class="form-control" required value="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="plan-trial" style="accent-color: var(--primary);">
+                            <span>باقة تجريبية مجانية</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">مميزات الباقة</label>
+                        <div class="features-grid"
+                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;">
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="feature-prayer" checked>
+                                <span>مواقيت الصلاة</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="feature-adhkar" checked>
+                                <span>الأذكار اليومية</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="feature-morning-evening">
+                                <span>أذكار الصباح والمساء</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="feature-before-after">
+                                <span>قبل/بعد الصلاة</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="feature-quran">
+                                <span>القرآن الكريم</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="feature-hadith">
+                                <span>الحديث الشريف</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="feature-fasting">
+                                <span>تذكير الصيام</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="feature-rosary">
+                                <span>السبحة الإلكترونية</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="feature-support">
+                                <span>الدعم الفني</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn"
+                            style="background: var(--bg-secondary); color: var(--text-main);"
+                            onclick="closeModal('create-plan-modal')">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">إنشاء الباقة</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -1506,192 +2005,267 @@
                 <h2>تعديل الباقة</h2>
                 <button class="modal-close" onclick="closeModal('edit-plan-modal')">&times;</button>
             </div>
-            <form id="edit-plan-form">
-                <input type="hidden" id="edit-plan-id">
-                <div class="form-group">
-                    <label class="form-label">اسم الباقة</label>
-                    <input type="text" id="edit-plan-name" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">المدة (بالأيام)</label>
-                    <input type="number" id="edit-plan-duration" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">السعر (جنيه)</label>
-                    <input type="number" step="0.01" id="edit-plan-price" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">
-                        <input type="checkbox" id="edit-plan-trial">
-                        باقة تجريبية
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">المميزات</label>
-                    <div>
-                        <label><input type="checkbox" id="edit-feature-prayer"> مواقيت الصلاة</label><br>
-                        <label><input type="checkbox" id="edit-feature-adhkar"> الأذكار</label>
+            <div class="modal-body">
+                <form id="edit-plan-form">
+                    <input type="hidden" id="edit-plan-id">
+                    <div class="form-group">
+                        <label class="form-label">اسم الباقة</label>
+                        <input type="text" id="edit-plan-name" class="form-control" required>
                     </div>
-                </div>
-                <button type="submit" class="btn" style="width: 100%;">حفظ التغييرات</button>
-            </form>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">المدة (بالأيام)</label>
+                            <input type="number" id="edit-plan-duration" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">السعر (جنيه)</label>
+                            <input type="number" step="0.01" id="edit-plan-price" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">أقصى عدد جلسات واتساب</label>
+                        <input type="number" id="edit-plan-max-sessions" class="form-control" required min="1">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="edit-plan-trial" style="accent-color: var(--primary);">
+                            <span>باقة تجريبية</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">مميزات الباقة</label>
+                        <div class="features-grid"
+                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;">
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="edit-feature-prayer">
+                                <span>مواقيت الصلاة</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="edit-feature-adhkar">
+                                <span>الأذكار اليومية</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="edit-feature-morning-evening">
+                                <span>أذكار الصباح والمساء</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="edit-feature-before-after">
+                                <span>قبل/بعد الصلاة</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="edit-feature-quran">
+                                <span>القرآن الكريم</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="edit-feature-hadith">
+                                <span>الحديث الشريف</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="edit-feature-fasting">
+                                <span>تذكير الصيام</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="edit-feature-rosary">
+                                <span>السبحة الإلكترونية</span>
+                            </label>
+                            <label class="feature-checkbox">
+                                <input type="checkbox" id="edit-feature-support">
+                                <span>الدعم الفني</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn"
+                            style="background: var(--bg-secondary); color: var(--text-main);"
+                            onclick="closeModal('edit-plan-modal')">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
+    <style>
+        .feature-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+        }
+
+        .feature-checkbox:hover {
+            background: var(--border);
+        }
+
+        .feature-checkbox input {
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+
     <!-- Add WhatsApp Session Modal -->
     <div id="add-session-modal" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-header">
-                <h2>
-                    <i class="fab fa-whatsapp" style="color: var(--primary);"></i>
+        <div class="modal-content" style="max-width: 500px; border-radius: 24px;">
+            <div class="modal-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: none; padding-bottom: 0;">
+                <h2 style="margin: 0; display: flex; align-items: center; gap: 12px; font-size: 1.4rem;">
+                    <div
+                        style="width: 40px; height: 40px; background: var(--primary-light); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
                     إضافة جلسة واتساب جديدة
                 </h2>
-                <button class="modal-close" onclick="closeModal('add-session-modal')">&times;</button>
+                <button class="modal-close" onclick="closeModal('add-session-modal')"
+                    style="background: var(--bg-secondary); border: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: 0.2s;">
+                    &times;
+                </button>
             </div>
+
             <form id="add-session-form">
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-tag"></i>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label" style="font-weight: 600; margin-bottom: 8px; display: block;">
+                        <i class="fas fa-tag" style="margin-left: 5px; color: var(--primary); opacity: 0.7;"></i>
                         اسم الجلسة <span style="color: var(--danger);">*</span>
                     </label>
-                    <input type="text" id="session-name" class="form-control" placeholder="مثال: واتساب المتجر"
-                        required>
+                    <input type="text" id="session-name" class="form-control" placeholder="مثال: واتساب المتجر" required
+                        style="padding: 12px 15px; border-radius: 12px;">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-phone"></i>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label" style="font-weight: 600; margin-bottom: 8px; display: block;">
+                        <i class="fas fa-phone" style="margin-left: 5px; color: var(--primary); opacity: 0.7;"></i>
                         رقم الهاتف <span style="color: var(--danger);">*</span>
                     </label>
                     <div style="display: flex; gap: 10px;">
-                        <div style="position: relative; width: 150px;">
-                            <input type="text" id="country-search" class="form-control" placeholder="ابحث عن دولة..."
-                                style="padding-right: 35px;" onkeyup="searchCountries()" onfocus="showCountryList()">
+                        <div style="position: relative; width: 140px;">
+                            <input type="text" id="country-search" class="form-control" placeholder="دولة..."
+                                style="padding-right: 35px; border-radius: 12px; padding-top: 12px; padding-bottom: 12px;"
+                                onkeyup="searchCountries()" onfocus="showCountryList()">
                             <div id="selected-flag"
-                                style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 1.2em;">
+                                style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 1.25rem;">
                                 🇪🇬</div>
                             <input type="hidden" id="country-code" value="+20">
                             <div id="country-dropdown"
-                                style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: var(--shadow-lg);">
+                                style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: var(--shadow-lg); margin-top: 5px;">
                             </div>
                         </div>
-                        <input type="tel" id="session-phone" class="form-control" placeholder="1234567890" required
-                            style="flex: 1;">
+                        <div
+                            style="flex: 1; position: relative; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; padding: 0 12px;">
+                            <span id="display-prefix"
+                                style="color: var(--text-muted); font-weight: 600; margin-left: 8px; border-left: 1px solid var(--border); padding-left: 8px; direction: ltr;">+20</span>
+                            <input type="tel" id="session-phone" class="form-control" placeholder="123456789" required
+                                style="background: transparent; border: none; box-shadow: none; padding: 12px 0; direction: ltr; text-align: left; flex: 1; font-weight: 600;">
+                        </div>
                     </div>
                 </div>
-                <div class="form-group" style="margin-top: 15px;">
-                    <label class="form-label">
-                        <i class="fas fa-link"></i>
+
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label class="form-label" style="font-weight: 600; margin-bottom: 8px; display: block;">
+                        <i class="fas fa-link" style="margin-left: 5px; color: var(--primary); opacity: 0.7;"></i>
                         رابط الويب هوك (اختياري)
                     </label>
                     <input type="url" id="session-webhook" class="form-control"
-                        placeholder="https://example.com/webhook">
-                    <small style="color: var(--text-muted); display: block; margin-top: 5px;">رابط لاستقبال إشعارات
-                        الرسائل</small>
+                        placeholder="https://example.com/webhook" style="padding: 12px 15px; border-radius: 12px;">
+                    <small style="color: var(--text-muted); display: block; margin-top: 5px; font-size: 0.8rem;">رابط
+                        لاستقبال إشعارات الرسائل</small>
                 </div>
-                <button type="submit" class="btn" style="width: 100%; padding: 12px; font-size: 1rem;">
-                    <i class="fas fa-qrcode"></i>
-                    إنشاء وربط
+
+                <button type="submit" class="btn"
+                    style="width: 100%; padding: 14px; font-size: 1.05rem; font-weight: 700; border-radius: 14px; box-shadow: 0 4px 15px var(--primary-light);">
+                    <i class="fas fa-qrcode" style="margin-left: 8px;"></i>
+                    إنشاء وربط الجلسة
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- QR Code Popup -->
-    <div id="qr-popup" class="modal">
-        <div class="modal-content" style="max-width: 600px; text-align: center;">
-            <div class="modal-header" style="border-bottom: 2px solid var(--primary);">
-                <h2 style="color: var(--primary);">
-                    <i class="fab fa-whatsapp"></i>
-                    امسح رمز QR
-                </h2>
-                <button class="modal-close" onclick="closeQRPopup()">&times;</button>
+    <!-- QR Code Popup (User Style) -->
+    <div id="qr-popup" class="qr-popup">
+        <div class="qr-content" style="border-radius: 32px; overflow: hidden; color: white;">
+            <button onclick="closeQRPopup()"
+                style="position:absolute; top:20px; right:20px; background: rgba(255,255,255,0.1); border:none; cursor:pointer; width: 36px; height: 36px; border-radius: 50%; color: inherit; display: flex; align-items: center; justify-content: center; z-index: 10; transition: 0.2s;">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div id="status-waiting" style="padding: 20px 0;">
+                <div class="spinner"></div>
+                <h3 style="margin-top: 20px; font-weight: 600;">جاري تجهيز الاتصال</h3>
+                <p style="opacity: 0.7; font-size: 0.95rem;">برجاء الانتظار قليلاً لتوليد رمز الاستجابة السريعة...</p>
             </div>
 
-            <div style="padding: 2rem;">
-                <!-- Session Info -->
-                <div id="session-info-display"
-                    style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; text-align: right;">
-                    <p style="margin: 4px 0; color: var(--text-muted);">
-                        <strong>الجهاز:</strong> <span id="display-device">-</span>
-                    </p>
-                    <p style="margin: 4px 0; color: var(--text-muted);">
-                        <strong>اسم الجلسة:</strong> <span id="display-session-name">-</span>
-                    </p>
-                </div>
-
-                <!-- Connection Status -->
-                <div id="connection-status-display" style="margin-bottom: 1.5rem;">
-                    <div id="status-waiting" style="display: block;">
-                        <div
-                            style="width: 80px; height: 80px; border-radius: 50%; background: var(--accent-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                            <i class="fas fa-qrcode" style="font-size: 2.5rem; color: var(--accent);"></i>
-                        </div>
-                        <h3 style="color: var(--accent); margin-bottom: 0.5rem;">في انتظار المسح...</h3>
-                        <p style="color: var(--text-muted); font-size: 0.95rem;">امسح الرمز بكاميرا واتساب</p>
-                    </div>
-
-                    <div id="status-connecting" style="display: none;">
-                        <div
-                            style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                            <i class="fas fa-spinner fa-spin" style="font-size: 2.5rem; color: var(--primary);"></i>
-                        </div>
-                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">جارٍ الاتصال...</h3>
-                        <p style="color: var(--text-muted); font-size: 0.95rem;">يرجى الانتظار</p>
-                    </div>
-
-                    <div id="status-connected" style="display: none;">
-                        <div
-                            style="width: 80px; height: 80px; border-radius: 50%; background: var(--success-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                            <i class="fas fa-check-circle" style="font-size: 2.5rem; color: var(--success);"></i>
-                        </div>
-                        <h3 style="color: var(--success); margin-bottom: 0.5rem;">✅ تم الاتصال بنجاح!</h3>
-                        <p style="color: var(--text-muted); font-size: 0.95rem;">الجلسة نشطة الآن</p>
-                    </div>
-
-                    <div id="status-error" style="display: none;">
-                        <div
-                            style="width: 80px; height: 80px; border-radius: 50%; background: var(--danger-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                            <i class="fas fa-exclamation-triangle" style="font-size: 2.5rem; color: var(--danger);"></i>
-                        </div>
-                        <h3 style="color: var(--danger); margin-bottom: 0.5rem;">❌ فشل الاتصال</h3>
-                        <p id="error-message" style="color: var(--text-muted); font-size: 0.95rem;">حدث خطأ، يرجى
-                            المحاولة مرة أخرى</p>
+            <div id="status-connecting" style="display:none; padding: 10px 0;">
+                <div style="margin-bottom: 25px;">
+                    <h3 id="display-device" style="margin: 0 0 5px 0; font-size: 1.5rem; font-weight: 700;">Android</h3>
+                    <div
+                        style="display: inline-flex; align-items: center; gap: 6px; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                        <i class="fas fa-link"></i> <span id="display-session-name">Session</span>
                     </div>
                 </div>
 
-                <!-- QR Code Display -->
-                <div id="qr-code-container"
-                    style="background: white; padding: 20px; border-radius: var(--radius-md); box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: inline-block; margin-bottom: 1.5rem;">
-                    <img id="qr-popup-image" src="" alt="QR Code" style="width: 300px; height: 300px; display: block;">
-                </div>
-
-                <!-- Instructions -->
                 <div
-                    style="background: var(--bg-secondary); padding: 1.5rem; border-radius: var(--radius-md); text-align: right;">
-                    <h4 style="margin-bottom: 1rem; color: var(--primary-dark);">
-                        <i class="fas fa-info-circle"></i>
-                        خطوات المسح
-                    </h4>
-                    <ol style="color: var(--text-muted); line-height: 2; padding-right: 20px; margin: 0;">
-                        <li>افتح <strong>واتساب</strong> على هاتفك</li>
-                        <li>اضغط <strong>القائمة (⋮)</strong> ← <strong>"الأجهزة المرتبطة"</strong></li>
-                        <li>اضغط <strong>"ربط جهاز"</strong></li>
-                        <li>وجّه الكاميرا نحو الرمز أعلاه</li>
-                    </ol>
+                    style="position: relative; padding: 15px; background: white; border-radius: 24px; display: inline-block; box-shadow: 0 10px 25px rgba(0,0,0,0.2); margin-bottom: 25px;">
+                    <img id="qr-popup-image" src="" style="width:230px; height:230px; display: block;">
                 </div>
 
-                <!-- Action Buttons -->
-                <div style="margin-top: 1.5rem; display: flex; gap: 10px; justify-content: center;">
-                    <button onclick="refreshQRCode()" class="btn"
-                        style="background: var(--bg-secondary); color: var(--text-main);">
-                        <i class="fas fa-sync-alt"></i>
-                        تحديث الرمز
-                    </button>
-                    <button onclick="closeQRPopup()" class="btn" id="close-qr-btn" style="display: none;">
-                        <i class="fas fa-check"></i>
-                        إغلاق
-                    </button>
+                <div
+                    style="background: rgba(var(--primary-rgb), 0.1); padding: 15px; border-radius: 16px; margin-bottom: 20px; color: var(--text-main); text-align: right;">
+                    <p style="margin: 0; font-weight: 600; font-size: 0.95rem; margin-bottom: 8px;">خطوات الربط:</p>
+                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.85rem; opacity: 0.9;">
+                        <li style="margin-bottom: 5px;"><i class="fas fa-circle"
+                                style="font-size: 0.4rem; vertical-align: middle; margin-left: 8px;"></i>افتح واتساب على
+                            هاتفك</li>
+                        <li style="margin-bottom: 5px;"><i class="fas fa-circle"
+                                style="font-size: 0.4rem; vertical-align: middle; margin-left: 8px;"></i>اضغط على
+                            الإعدادات أو الثلاث نقاط</li>
+                        <li><i class="fas fa-circle"
+                                style="font-size: 0.4rem; vertical-align: middle; margin-left: 8px;"></i>اختر "الأجهزة
+                            المرتبطة" ثم "ربط جهاز"</li>
+                    </ul>
                 </div>
+
+                <button onclick="refreshQRCode()" class="btn btn-sm"
+                    style="margin-top:10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    <i class="fas fa-sync-alt"></i> تحديث الرمز
+                </button>
+            </div>
+
+            <div id="status-connected" style="display:none; padding: 40px 0; color: #25D366;">
+                <div
+                    style="width: 100px; height: 100px; background: #25D366; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; box-shadow: 0 0 30px rgba(37, 211, 102, 0.4);">
+                    <i class="fas fa-check" style="font-size: 3.5rem;"></i>
+                </div>
+                <h2 style="margin: 0 0 10px 0; font-weight: 800; color: white;">تم الاتصال بنجاح!</h2>
+                <p style="opacity: 0.8; color: white;">تم ربط الجلسة بنجاح، يمكنك العمل الآن</p>
+            </div>
+
+            <div id="status-error" style="display:none; padding: 40px 0;">
+                <div
+                    style="width: 80px; height: 80px; background: #f44336; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <i class="fas fa-exclamation" style="font-size: 2.5rem;"></i>
+                </div>
+                <h3 id="error-message" style="margin: 0 0 15px 0;">حدث خطأ في الاتصال</h3>
+                <button onclick="closeQRPopup()" class="btn"
+                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">إغلاق</button>
             </div>
         </div>
     </div>
@@ -1777,6 +2351,15 @@
     </div>
 
     <script>
+        // --- TOAST NOTIFICATION SYSTEM ---
+
+
+        // Override native alert
+        window.alert = function (msg) {
+            const type = (msg.includes('نجاح') || msg.includes('تم')) ? 'success' : 'error';
+            showToast(msg, type);
+        };
+
         // Sidebar Toggle
         function toggleAdminSidebar() {
             const sidebar = document.querySelector('.admin-sidebar');
@@ -1929,23 +2512,7 @@
         }
 
         // Tab Switching
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.admin-nav-item').forEach(item => item.classList.remove('active'));
 
-            document.getElementById(tabName + '-tab').classList.add('active');
-            event.target.closest('.admin-nav-item').classList.add('active');
-
-            // Header will respond to sidebar classes; no fixed-class toggling here.
-            const header = document.getElementById('admin-header');
-
-            // Load data when switching tabs
-            if (tabName === 'users') loadUsers();
-            if (tabName === 'subscriptions') loadSubscriptions();
-            if (tabName === 'plans') loadPlans();
-            if (tabName === 'payments') loadActivationRequests();
-            if (tabName === 'content_library') loadContentLibrary();
-        }
 
         // Current filter for activation requests
         let currentActivationFilter = 'all';
@@ -1972,6 +2539,13 @@
                 document.getElementById('filter-payment-count').textContent = paymentsCount;
                 document.getElementById('filter-subscription-count').textContent = subscriptionsCount;
 
+                // Also update sidebar badge
+                const paymentsBadge = document.getElementById('payments-badge');
+                if (paymentsBadge) {
+                    paymentsBadge.textContent = paymentsCount;
+                    paymentsBadge.style.display = paymentsCount > 0 ? 'flex' : 'none';
+                }
+
                 if (filteredRequests.length === 0) {
                     tbody.innerHTML = `<tr>
                         <td colspan="9" style="text-align: center; padding: 3rem; color: var(--text-muted);">
@@ -1990,35 +2564,35 @@
 
                     return `
                     <tr style="background: #fffbeb;">
-                        <td>
+                        <td data-label="المستخدم">
                             <div style="font-weight: 600;">${req.user_name}</div>
                             <small style="color: var(--text-muted);">${req.phone}</small>
                         </td>
-                        <td>
+                        <td data-label="الباقة">
                             <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;">
                                 ${req.plan_name || 'غير محدد'}
                             </span>
                         </td>
-                        <td style="font-weight: bold; color: var(--primary-dark);">${req.amount} ج.م</td>
-                        <td>
+                        <td data-label="المبلغ" style="font-weight: bold; color: var(--primary-dark);">${req.amount} ج.م</td>
+                        <td data-label="الطريقة">
                             ${isPayment ?
                             (req.method === 'vodafone_cash' ? 'فودافون كاش' : 'Instapay')
                             : '<span style="color: var(--text-muted);">-</span>'}
                         </td>
-                        <td>${req.transaction_ref || '-'}</td>
-                        <td>
+                        <td data-label="المرجع">${req.transaction_ref || '-'}</td>
+                        <td data-label="الإيصال">
                             ${req.receipt_path ?
                             `<a href="${req.receipt_path}" target="_blank" style="color: var(--primary); text-decoration: underline;">عرض الإيصال <i class="fas fa-external-link-alt"></i></a>`
                             : '-'}
                         </td>
-                        <td>${new Date(req.created_at).toLocaleDateString('ar-EG')}</td>
-                        <td>
+                        <td data-label="التاريخ">${new Date(req.created_at).toLocaleDateString('ar-EG')}</td>
+                        <td data-label="النوع">
                             <span style="background: ${typeColor}20; color: ${typeColor}; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
                                 <i class="fas ${isPayment ? 'fa-money-bill-wave' : 'fa-user-clock'}"></i>
                                 ${typeLabel}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="الإجراءات">
                             ${isPayment ? `
                                 <button class="action-btn primary" onclick="approvePayment(${req.id})"><i class="fas fa-check"></i> قبول</button>
                                 <button class="action-btn danger" onclick="rejectPayment(${req.id})"><i class="fas fa-times"></i> رفض</button>
@@ -2048,106 +2622,97 @@
             loadActivationRequests();
         }
 
+        // Helper Functions for UI
+
+
+        function showConfirm(title, message, onConfirm) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').textContent = message;
+
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.add('active');
+
+            // Simple robust handler
+            const yesBtn = document.getElementById('confirm-btn-yes');
+            // Remove old listeners to prevent stacking
+            const newYesBtn = yesBtn.cloneNode(true);
+            yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
+
+            newYesBtn.onclick = () => {
+                closeModal('confirm-modal');
+                onConfirm();
+            };
+        }
+
+        function showRejectModal(onConfirm) {
+            const modal = document.getElementById('reject-modal');
+            const reasonInput = document.getElementById('reject-reason');
+            reasonInput.value = ''; // Reset
+            modal.classList.add('active');
+
+            const confirmBtn = document.getElementById('reject-confirm-btn');
+            // Remove old listeners
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+
+            newBtn.onclick = () => {
+                const reason = reasonInput.value.trim();
+                closeModal('reject-modal');
+                onConfirm(reason);
+            };
+        }
+
         async function approvePayment(id) {
-            if (!confirm('هل تريد قبول هذا الدفع وتفعيل الاشتراك؟')) return;
-            try {
-                const res = await fetch(`/api/admin/payments/${id}/approve`, { method: 'PUT' });
-                if (res.ok) {
-                    alert('تم قبول الدفع وتفعيل الاشتراك بنجاح!');
-                    loadActivationRequests();
-                    loadStats(); // Update stats
-                } else {
-                    alert('حدث خطأ أثناء المعالجة');
-                }
-            } catch (e) { console.error(e); alert('حدث خطأ'); }
+            showConfirm('قبول الدفع', 'هل تريد قبول هذا الدفع وتفعيل الاشتراك؟', async () => {
+                try {
+                    const res = await fetch(`/api/admin/payments/${id}/approve`, { method: 'PUT' });
+                    if (res.ok) {
+                        showToast('تم قبول الدفع وتفعيل الاشتراك بنجاح!', 'success');
+                        loadActivationRequests();
+                        loadStats();
+                    } else {
+                        showToast('حدث خطأ أثناء المعالجة', 'error');
+                    }
+                } catch (e) { console.error(e); showToast('حدث خطأ', 'error'); }
+            });
         }
 
         async function rejectPayment(id) {
-            // Prompt for reason
-            const reason = prompt('هل تريد كتابة سبب للرفض؟ (اتركه فارغاً لإرسال السبب الافتراضي: عدم وضوح الإيصال)', '');
-            if (reason === null) return; // Cancelled
+            showRejectModal(async (reason) => {
+                try {
+                    const res = await fetch(`/api/admin/payments/${id}/reject`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reason: reason })
+                    });
 
-            try {
-                const res = await fetch(`/api/admin/payments/${id}/reject`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ reason: reason })
-                });
-
-                if (res.ok) {
-                    alert('تم رفض الدفع وإبلاغ المستخدم.');
-                    loadActivationRequests();
-                } else {
-                    alert('حدث خطأ');
-                }
-            } catch (e) { alert('حدث خطأ'); }
+                    if (res.ok) {
+                        showToast('تم رفض الدفع وإبلاغ المستخدم.', 'info');
+                        loadActivationRequests();
+                    } else {
+                        showToast('حدث خطأ', 'error');
+                    }
+                } catch (e) { showToast('حدث خطأ', 'error'); }
+            });
         }
 
         async function deletePayment(id) {
-            if (!confirm('هل أنت متأكد من حذف هذا السجل نهائياً؟')) return;
-            try {
-                const res = await fetch(`/api/admin/payments/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    // alert('تم الحذف بنجاح'); // Optional: clutter
-                    loadPayments();
-                } else {
-                    alert('حدث خطأ أثناء الحذف');
-                }
-            } catch (e) { alert('حدث خطأ'); }
+            showConfirm('حذف السجل', 'هل أنت متأكد من حذف هذا السجل نهائياً؟', async () => {
+                try {
+                    const res = await fetch(`/api/admin/payments/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        loadPayments();
+                    } else {
+                        showToast('حدث خطأ أثناء الحذف', 'error');
+                    }
+                } catch (e) { showToast('حدث خطأ', 'error'); }
+            });
         }
 
 
 
 
-        async function approveSubscription(id, userName, phone, planName, duration) {
-            if (!confirm(`هل تريد تفعيل اشتراك ${userName} في باقة "${planName}"؟\n\nسيتم إرسال رسالة واتساب تلقائية للمستخدم.`)) return;
 
-            try {
-                const res = await fetch(`/api/admin/subscriptions/${id}/approve`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        sendWhatsApp: true,
-                        phone: phone,
-                        userName: userName,
-                        planName: planName,
-                        duration: duration
-                    })
-                });
-
-                if (res.ok) {
-                    alert(`✅ تم تفعيل اشتراك ${userName} بنجاح!\n\n📱 تم إرسال رسالة واتساب للمستخدم.`);
-
-                    loadStats(); // Update dashboard stats
-                } else {
-                    alert('حدث خطأ أثناء التفعيل');
-                }
-            } catch (e) {
-                console.error(e);
-                alert('حدث خطأ في الاتصال');
-            }
-        }
-
-        async function rejectSubscription(id, userName) {
-            if (!confirm(`هل تريد رفض طلب ${userName}؟\n\nلن يتم تفعيل الاشتراك.`)) return;
-
-            try {
-                const res = await fetch(`/api/admin/subscriptions/${id}/reject`, {
-                    method: 'PUT'
-                });
-
-                if (res.ok) {
-                    alert(`تم رفض طلب ${userName}`);
-
-                    loadStats();
-                } else {
-                    alert('حدث خطأ');
-                }
-            } catch (e) {
-                console.error(e);
-                alert('حدث خطأ في الاتصال');
-            }
-        }
 
         // Load Stats
         async function loadStats() {
@@ -2155,6 +2720,8 @@
                 const res = await fetch('/api/admin/stats');
                 const data = await res.json();
                 document.getElementById('stat-users').textContent = data.totalUsers;
+                const adminStat = document.getElementById('stat-admins');
+                if (adminStat) adminStat.textContent = data.totalAdmins;
                 document.getElementById('stat-active').textContent = data.activeSubscriptions;
                 document.getElementById('stat-pending').textContent = data.pendingSubscriptions;
 
@@ -2171,70 +2738,34 @@
             return text ? text.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
         }
 
-        // Load Notifications, Auto-Refresh
-        async function loadNotifications() {
-            try {
-                const res = await fetch('/api/admin/activation-requests');
-                const requests = await res.json();
+        // --- Toast System ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
 
-                const pendingRequests = requests.filter(r => r.status === 'pending' || !r.status);
-                const count = pendingRequests.length;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
 
-                // Update badge
-                const badge = document.getElementById('notification-badge');
-                if (badge) {
-                    badge.textContent = count;
-                    badge.style.display = count > 0 ? 'flex' : 'none';
-                }
+            let icon = 'fa-info-circle';
+            if (type === 'success') icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-exclamation-circle';
+            if (type === 'warning') icon = 'fa-bell';
 
-                // Update notifications list
-                const notificationsList = document.getElementById('notifications-list');
-                if (!notificationsList) return;
+            toast.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <div style="flex: 1;">${message}</div>
+            `;
 
-                if (count === 0) {
-                    notificationsList.innerHTML = `
-                        <div style="padding: 1rem; text-align: center; color: var(--text-muted);">
-                            <i class="fas fa-check-circle" style="font-size: 2rem; color: var(--primary); margin-bottom: 0.5rem; display: block;"></i>
-                            <div>لا توجد إشعارات حالياً</div>
-                            <div style="font-size: 0.8rem; margin-top: 0.5rem;">جميع الطلبات تمت معالجتها</div>
-                        </div>
-                    `;
-                } else {
-                    notificationsList.innerHTML = pendingRequests.map(req => {
-                        const isPayment = req.request_type === 'payment';
-                        const icon = isPayment ? 'fa-money-bill-wave' : 'fa-user-clock';
-                        const iconColor = isPayment ? '#25D366' : '#667eea';
-                        const typeText = isPayment ? 'طلب دفع جديد' : 'طلب تفعيل';
+            container.appendChild(toast);
 
-                        return `
-                            <div onclick="switchTab('payments')" style="padding: 1rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s;" 
-                                 onmouseover="this.style.background='var(--bg-secondary)'" 
-                                 onmouseout="this.style.background='transparent'">
-                                <div style="display: flex; align-items: start; gap: 12px;">
-                                    <div style="width: 40px; height: 40px; border-radius: 50%; background: ${iconColor}20; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                        <i class="fas ${icon}" style="color: ${iconColor};"></i>
-                                    </div>
-                                    <div style="flex: 1;">
-                                        <div style="font-weight: 600; color: var(--text-main); margin-bottom: 4px;">${typeText}</div>
-                                        <div style="font-size: 0.85rem; color: var(--text-muted);">
-                                            ${escapeHtml(req.user_name)} - ${escapeHtml(req.plan_name)}
-                                        </div>
-                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
-                                            <i class="fas fa-clock"></i> ${new Date(req.created_at).toLocaleDateString('ar-EG')}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-            } catch (error) {
-                console.error('Error loading notifications:', error);
-            }
+            // Auto-remove after 5s
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s ease-in forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
         }
 
-        // Refresh notifications every 30s
-        setInterval(loadNotifications, 30000);
+
 
         // Load Users
         let allUsers = [];
@@ -2258,18 +2789,18 @@
 
                 tbody.innerHTML = logs.map(log => `
                     <tr>
-                        <td>
+                        <td data-label="المستخدم">
                             <div class="user-info">
                                 <div>${log.user_name || 'System / Unknown'}</div>
                                 <div class="text-muted" style="font-size: 0.8rem;">${log.user_email || ''}</div>
                             </div>
                         </td>
-                        <td><span class="badge badge-info">${log.action}</span></td>
-                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(log.details)}">
+                        <td data-label="الإجراء"><span class="badge badge-info">${log.action}</span></td>
+                        <td data-label="التفاصيل" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(log.details)}">
                             ${escapeHtml(log.details)}
                         </td>
-                        <td>${log.ip_address || '-'}</td>
-                        <td dir="ltr">${new Date(log.created_at).toLocaleString('ar-EG')}</td>
+                        <td data-label="IP">${log.ip_address || '-'}</td>
+                        <td data-label="التاريخ" dir="ltr">${new Date(log.created_at).toLocaleString('ar-EG')}</td>
                     </tr>
                 `).join('');
             } catch (error) {
@@ -2309,12 +2840,14 @@
         }
 
         function updateUserCounts() {
+            // Filter out admins from all counts for isolation
+            const actualUsers = allUsers.filter(u => u.role !== 'admin');
             const counts = {
-                all: allUsers.length,
-                active: allUsers.filter(u => u.subscription_status === 'active' && !u.plan_name?.includes('تجريبية')).length,
-                trial: allUsers.filter(u => u.plan_name?.includes('تجريبية')).length,
-                pending: allUsers.filter(u => u.subscription_status === 'pending').length,
-                expired: allUsers.filter(u => !u.subscription_status || u.subscription_status === 'expired').length
+                all: actualUsers.length,
+                active: actualUsers.filter(u => u.subscription_status === 'active' && !u.plan_name?.includes('تجريبية')).length,
+                trial: actualUsers.filter(u => u.plan_name?.includes('تجريبية')).length,
+                pending: actualUsers.filter(u => u.subscription_status === 'pending').length,
+                expired: actualUsers.filter(u => !u.subscription_status || u.subscription_status === 'expired').length
             };
 
             document.getElementById('count-all').textContent = counts.all;
@@ -2326,15 +2859,16 @@
 
         function displayUsers() {
             const tbody = document.getElementById('users-tbody');
+            if (!tbody) return;
 
-            let filteredUsers = allUsers;
-
-            // Apply filter
+            // Apply filter and hide admins for isolation
+            let filteredUsers = allUsers.filter(u => u.role !== 'admin');
+            
             if (currentFilter !== 'all') {
-                filteredUsers = allUsers.filter(user => {
+                filteredUsers = filteredUsers.filter(user => {
                     switch (currentFilter) {
                         case 'active':
-                            return user.subscription_status === 'active' && !user.plan_name?.includes('تجريبية');
+                            return user.subscription_status === 'active' || user.subscription_status === 'premium_admin';
                         case 'trial':
                             return user.plan_name?.includes('تجريبية');
                         case 'pending':
@@ -2349,7 +2883,7 @@
 
             if (filteredUsers.length === 0) {
                 tbody.innerHTML = `<tr>
-                    <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                    <td colspan="11" style="text-align: center; padding: 3rem; color: var(--text-muted);">
                         <i class="fas fa-user-slash" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block; opacity: 0.5;"></i>
                         <div style="font-size: 1.1rem; font-weight: 600;">لا يوجد مستخدمين في هذا التصنيف</div>
                         <div style="font-size: 0.9rem; margin-top: 0.5rem;">جرب تصنيف آخر أو ابحث بكلمة مختلفة</div>
@@ -2376,9 +2910,44 @@
                 ];
                 const colorIndex = user.name.charCodeAt(0) % colors.length;
 
+                // Calculate subscription details
+                let startDate = '-';
+                let endDate = '-';
+                let remainingDays = '-';
+                let remainingClass = '';
+
+                if (user.subscription_status === 'active' && user.subscription_end) {
+                    const start = new Date(user.subscription_start);
+                    const end = new Date(user.subscription_end);
+                    const now = new Date();
+
+                    startDate = start.toLocaleDateString('ar-EG');
+                    endDate = end.toLocaleDateString('ar-EG');
+
+                    const diffTime = end - now;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    if (diffDays < 0) {
+                        remainingDays = 'منتهي';
+                        remainingClass = 'text-danger';
+                    } else {
+                        remainingDays = diffDays + ' يوم';
+                        if (diffDays <= 3) remainingClass = 'text-danger';
+                        else if (diffDays <= 7) remainingClass = 'text-warning';
+                        else remainingClass = 'text-success';
+                    }
+                }
+
+                // Premium Admin Logic
+                const isAdmin = user.role === 'admin';
+                const premiumAdminBadge = isAdmin ?
+                    `<span class="badge badge-purple" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #fff; box-shadow: 0 2px 5px rgba(255, 165, 0, 0.4); padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                        <i class="fas fa-crown"></i> Premium Admin
+                    </span>` : '';
+
                 return `
                 <tr class="user-row" data-user-name="${user.name.toLowerCase()}" data-user-email="${user.email.toLowerCase()}" data-user-phone="${user.phone}">
-                    <td>
+                    <td data-label="المستخدم">
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div style="width: 45px; height: 45px; border-radius: 50%; background: ${colors[colorIndex]}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
                                 ${user.name.charAt(0).toUpperCase()}
@@ -2388,48 +2957,63 @@
                             </div>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="البريد الإلكتروني">
                         <div style="display: flex; align-items: center; gap: 6px;">
                             <i class="fas fa-envelope" style="color: var(--text-muted); font-size: 0.85rem;"></i>
                             <span style="font-size: 0.9rem;">${user.email}</span>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="رقم الهاتف">
                         <div style="display: flex; align-items: center; gap: 6px;">
                             <i class="fab fa-whatsapp" style="color: var(--primary); font-size: 1rem;"></i>
                             <span style="font-weight: 500; direction: ltr; text-align: right; display: block;">${user.phone}</span>
                         </div>
                     </td>
-                    <td>
+                    <td data-label="تاريخ الانضمام">
                         <div style="font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 4px;">
                             <i class="fas fa-calendar-alt" style="color: var(--text-muted); font-size: 0.8rem;"></i>
                             ${joinDate}
                         </div>
                     </td>
-                    <td>
+                    <td data-label="تاريخ البدء" style="font-size: 0.85rem;">${startDate}</td>
+                    <td data-label="تاريخ الانتهاء" style="font-size: 0.85rem;">${endDate}</td>
+                    <td data-label="المتبقي">
+                        <span class="${remainingClass}" style="font-weight: 600; font-size: 0.85rem;">${remainingDays}</span>
+                    </td>
+                    <td data-label="الصلاحية">
                         <span class="status-badge ${user.role === 'admin' ? 'status-active' : 'status-pending'}" style="display: inline-flex; align-items: center; gap: 4px;">
                             <i class="fas ${user.role === 'admin' ? 'fa-crown' : 'fa-user'}"></i>
                             ${user.role === 'admin' ? 'مدير' : 'مستخدم'}
                         </span>
                     </td>
-                    <td>
+                    <td data-label="الباقة الحالية">
                         ${user.plan_name ?
                         `<span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: 600; display: inline-block;">
                                 ${user.plan_name}
                             </span>`
                         : '<span style="color: var(--text-muted); font-size: 0.85rem;">-</span>'}
                     </td>
-                    <td>
-                        <span class="status-badge ${user.subscription_status === 'active' ? 'status-active' : user.subscription_status === 'pending' ? 'status-pending' : 'status-expired'}" style="display: inline-flex; align-items: center; gap: 4px;">
+                    <td data-label="حالة الاشتراك">
+                        ${isAdmin ? premiumAdminBadge :
+                        `<span class="status-badge ${user.subscription_status === 'active' ? 'status-active' : user.subscription_status === 'pending' ? 'status-pending' : 'status-expired'}" style="display: inline-flex; align-items: center; gap: 4px;">
                             <i class="fas ${user.subscription_status === 'active' ? 'fa-check-circle' : user.subscription_status === 'pending' ? 'fa-clock' : 'fa-times-circle'}"></i>
                             ${user.subscription_status === 'active' ? 'نشط' : user.subscription_status === 'pending' ? 'قيد المراجعة' : user.subscription_status === 'expired' ? 'منتهي' : 'بدون اشتراك'}
-                        </span>
+                        </span>`
+                    }
                     </td>
-                    <td>
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <td data-label="الإجراءات">
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+                            <button class="action-btn info" onclick='viewUserSessions("${user.id}", "${user.name}", ${JSON.stringify(user)})' title="عرض بيانات وجلسات هذا المستخدم">
+                                <i class="fas fa-history"></i> سجل الجلسات
+                            </button>
                             <button class="action-btn primary" onclick='editUser(${JSON.stringify(user)})' title="تعديل بيانات المستخدم">
                                 <i class="fas fa-edit"></i> تعديل
                             </button>
+                            ${user.subscription_status && user.role !== 'admin' ? `
+                                <button class="action-btn info" onclick='editSubscription(${JSON.stringify(user)})' title="تعديل مدة الاشتراك">
+                                    <i class="fas fa-calendar-alt"></i> الاشتراك
+                                </button>
+                            ` : ''}
                             <button class="action-btn warning" onclick="toggleRole('${user.id}', '${user.role}')" title="${user.role === 'admin' ? 'إلغاء صلاحيات المدير' : 'ترقية إلى مدير'}">
                                 <i class="fas ${user.role === 'admin' ? 'fa-user-minus' : 'fa-user-shield'}"></i>
                                 ${user.role === 'admin' ? 'إلغاء الصلاحية' : 'ترقية'}
@@ -2439,8 +3023,7 @@
                             </button>
                         </div>
                     </td>
-                </tr>
-                `;
+                </tr>`;
             }).join('');
         }
 
@@ -2488,7 +3071,7 @@
 
                 if (plans.length === 0) {
                     grid.innerHTML = `
-                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem 2rem;">
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem 2rem;">
                             <i class="fas fa-box-open" style="font-size: 4rem; color: var(--text-muted); opacity: 0.3; margin-bottom: 1rem; display: block;"></i>
                             <h3 style="color: var(--text-main); margin: 1rem 0;">لا توجد باقات حالياً</h3>
                             <p style="color: var(--text-muted); margin-bottom: 1.5rem;">ابدأ بإنشاء باقة جديدة</p>
@@ -2513,30 +3096,30 @@
 
                     return `
                     <div class="plan-card" style="
-                        background: var(--bg-card);
-                        border: 2px solid transparent;
-                        border-radius: var(--radius-lg);
-                        padding: 2rem;
-                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                        position: relative;
-                        overflow: hidden;
-                        cursor: pointer;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-                    " onmouseover="this.style.boxShadow='0 12px 32px rgba(0,0,0,0.15)'; this.style.transform='translateY(-8px)'; this.style.borderColor='var(--primary)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)'; this.style.transform='translateY(0)'; this.style.borderColor='transparent'">
-                        <!-- Background gradient accent -->
-                        <div style="
-                            position: absolute;
-                            top: -50%;
-                            right: -50%;
-                            width: 200%;
-                            height: 200%;
-                            background: ${bgGradient};
-                            opacity: 0.05;
-                            border-radius: 50%;
-                            pointer-events: none;
-                        "></div>
+                background: var(--bg-card);
+                border: 2px solid transparent;
+                border-radius: var(--radius-lg);
+                padding: 2rem;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+                cursor: pointer;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                " onmouseover="this.style.boxShadow = '0 12px 32px rgba(0,0,0,0.15)'; this.style.transform = 'translateY(-8px)'; this.style.borderColor = 'var(--primary)'" onmouseout="this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; this.style.transform = 'translateY(0)'; this.style.borderColor = 'transparent'">
+                    <!-- Background gradient accent -->
+                    <div style="
+                position: absolute;
+                top: -50%;
+                right: -50%;
+                width: 200%;
+                height: 200%;
+                background: ${bgGradient};
+                opacity: 0.05;
+                border-radius: 50%;
+                pointer-events: none;
+                "></div>
 
-                        <!-- Content -->
+                    < !--Content -->
                         <div style="position: relative; z-index: 1;">
                             <!-- Header -->
                             <div style="display: flex; align-items: start; justify-content: space-between; margin-bottom: 1.5rem;">
@@ -2588,29 +3171,16 @@
                                     <i class="fas fa-check-circle" style="color: var(--primary); margin-left: 6px;"></i>
                                     المميزات
                                 </h4>
-                                <div style="display: flex; flex-direction: column; gap: 10px;">
-                                    ${features.prayer_times ? `
-                                        <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-secondary); border-radius: var(--radius-sm);">
-                                            <i class="fas fa-mosque" style="color: var(--primary); font-size: 1.1rem; width: 24px; text-align: center;"></i>
-                                            <span style="color: var(--text-main); font-weight: 500;">مواقيت الصلاة</span>
-                                        </div>
-                                    ` : `
-                                        <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-secondary); border-radius: var(--radius-sm); opacity: 0.5;">
-                                            <i class="fas fa-lock" style="color: var(--text-muted); font-size: 1.1rem; width: 24px; text-align: center;"></i>
-                                            <span style="color: var(--text-muted);">مواقيت الصلاة</span>
-                                        </div>
-                                    `}
-                                    ${features.adhkar ? `
-                                        <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-secondary); border-radius: var(--radius-sm);">
-                                            <i class="fas fa-book-quran" style="color: var(--primary); font-size: 1.1rem; width: 24px; text-align: center;"></i>
-                                            <span style="color: var(--text-main); font-weight: 500;">الأذكار اليومية</span>
-                                        </div>
-                                    ` : `
-                                        <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-secondary); border-radius: var(--radius-sm); opacity: 0.5;">
-                                            <i class="fas fa-lock" style="color: var(--text-muted); font-size: 1.1rem; width: 24px; text-align: center;"></i>
-                                            <span style="color: var(--text-muted);">الأذكار اليومية</span>
-                                        </div>
-                                    `}
+                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    ${features.prayer_times ? `<span class="badge badge-success">مواقيت الصلاة</span>` : ''}
+                                    ${features.adhkar ? `<span class="badge badge-success">الأذكار</span>` : ''}
+                                    ${features.morning_evening ? `<span class="badge badge-info">الصباح/المساء</span>` : ''}
+                                    ${features.before_after_prayer ? `<span class="badge badge-info">قبل/بعد الصلاة</span>` : ''}
+                                    ${features.quran ? `<span class="badge badge-warning">القرآن</span>` : ''}
+                                    ${features.hadith ? `<span class="badge badge-warning">الحديث</span>` : ''}
+                                    ${features.fasting ? `<span class="badge badge-purple">الصيام</span>` : ''}
+                                    ${features.rosary ? `<span class="badge badge-purple">السبحة</span>` : ''}
+                                    ${features.support ? `<span class="badge badge-primary">الدعم</span>` : ''}
                                 </div>
                             </div>
 
@@ -2628,16 +3198,16 @@
                                     <i class="fas fa-edit"></i> تعديل
                                 </button>
                                 <button class="action-btn danger" onclick="deletePlan(${plan.id}, '${plan.name.replace(/'/g, "\\'")})" style="
-                                    flex: 1;
-                                    padding: 12px;
-                                    font-weight: 600;
-                                    transition: all 0.2s;
+                                flex: 1;
+                                padding: 12px;
+                                font-weight: 600;
+                                transition: all 0.2s;
                                 " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                    <i class="fas fa-trash-alt"></i> حذف
-                                </button>
-                            </div>
+                                <i class="fas fa-trash-alt"></i> حذف
+                            </button>
                         </div>
-                    </div>`;
+                        </div>
+                    </div> `;
                 }).join('');
             } catch (error) {
                 console.error('Error loading plans:', error);
@@ -2647,7 +3217,7 @@
                         <i class="fas fa-exclamation-triangle" style="font-size: 2rem; display: block; margin-bottom: 1rem;"></i>
                         حدث خطأ في تحميل الباقات
                     </div>
-                `;
+                    `;
             }
         }
 
@@ -2659,6 +3229,53 @@
             document.getElementById('edit-user-phone').value = user.phone;
             document.getElementById('edit-user-modal').classList.add('active');
         }
+
+        function editSubscription(user) {
+            document.getElementById('sub-edit-user-id').value = user.id;
+            document.getElementById('sub-edit-user-name').value = user.name;
+
+            // Format dates for datetime-local input (YYYY-MM-DDTHH:MM)
+            const formatDate = (dateUnix) => {
+                if (!dateUnix) return '';
+                const d = new Date(dateUnix);
+                d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                return d.toISOString().slice(0, 16);
+            };
+
+            document.getElementById('sub-edit-start').value = formatDate(user.subscription_start);
+            document.getElementById('sub-edit-end').value = formatDate(user.subscription_end);
+            document.getElementById('sub-edit-status').value = user.subscription_status && user.subscription_status !== 'premium_admin' ? user.subscription_status : 'active';
+
+            document.getElementById('edit-subscription-modal').classList.add('active');
+        }
+
+        document.getElementById('edit-subscription-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('sub-edit-user-id').value;
+            const startDate = document.getElementById('sub-edit-start').value;
+            const endDate = document.getElementById('sub-edit-end').value;
+            const status = document.getElementById('sub-edit-status').value;
+
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/subscription`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ startDate, endDate, status })
+                });
+
+                if (res.ok) {
+                    alert('تم تحديث الاشتراك بنجاح');
+                    closeModal('edit-subscription-modal');
+                    loadUsers();
+                } else {
+                    const data = await res.json();
+                    alert('خطأ: ' + data.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('حدث خطأ أثناء التحديث');
+            }
+        });
 
         document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -2679,107 +3296,126 @@
                 if (res.ok) {
                     closeModal('edit-user-modal');
                     loadUsers();
-                    alert('تم تحديث المستخدم بنجاح');
+                    showToast('تم تحديث المستخدم بنجاح', 'success');
                 } else {
-                    alert('حدث خطأ أثناء التحديث');
+                    showToast('حدث خطأ أثناء التحديث', 'error');
                 }
             } catch (error) {
-                alert('حدث خطأ أثناء التحديث');
+                showToast('حدث خطأ في الاتصال بالخادم', 'error');
             }
         });
 
         async function toggleRole(userId, currentRole) {
             const newRole = currentRole === 'admin' ? 'user' : 'admin';
-            if (!confirm(`هل تريد ${newRole === 'admin' ? 'ترقية' : 'إلغاء صلاحية'} هذا المستخدم؟`)) return;
+            const actionText = newRole === 'admin' ? 'ترقية' : 'إلغاء صلاحية';
 
-            try {
-                await fetch(`/api/admin/users/${userId}/role`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ role: newRole })
-                });
-                loadUsers();
-                alert('تم تحديث الصلاحية بنجاح');
-            } catch (error) {
-                alert('حدث خطأ');
-            }
+            showConfirm('تعديل الصلاحيات', `هل تريد ${actionText} هذا المستخدم؟`, async () => {
+                try {
+                    await fetch(`/api/admin/users/${userId}/role`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ role: newRole })
+                    });
+                    loadUsers();
+                    showToast('تم تحديث الصلاحية بنجاح', 'success');
+                } catch (error) {
+                    showToast('حدث خطأ أثناء تحديث الصلاحية', 'error');
+                }
+            });
         }
 
         async function deleteUser(userId, userName) {
             // Check if this is the super admin
             const user = allUsers.find(u => u.id == userId);
             if (user && user.email === 'aman01125062943@gmail.com') {
-                alert('🚫 لا يمكن حذف حساب المدير الرئيسي!\n\nهذا الحساب محمي ولا يمكن حذفه. 👑');
+                showToast('🚫 لا يمكن حذف حساب المدير الرئيسي! هذا الحساب محمي. 👑', 'error');
                 return;
             }
 
-            if (!confirm(`هل تريد حذف المستخدم "${userName}"؟ هذا الإجراء لا يمكن التراجع عنه.`)) return;
+            const title = '⚠️ تأكيد الحذف النهائي';
+            const message = `هل أنت متأكد من رغبتك في حذف المستخدم "${userName}"؟ سيتم مسح جميع بياناته واشتراكاته وجلساته نهائياً من النظام، ولا يمكن التراجع عن هذا الإجراء.`;
 
-            try {
-                const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
-                const data = await res.json();
+            showConfirm(title, message, async () => {
+                try {
+                    const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+                    const data = await res.json();
 
-                if (data.protected) {
-                    alert('🚫 ' + data.error);
-                    return;
+                    if (data.protected) {
+                        showToast('🚫 ' + data.error, 'error');
+                        return;
+                    }
+
+                    if (res.ok) {
+                        loadUsers();
+                        loadStats();
+                        showToast('تم حذف المستخدم بنجاح', 'success');
+                    } else {
+                        showToast('حدث خطأ أثناء الحذف', 'error');
+                    }
+                } catch (error) {
+                    showToast('حدث خطأ أثناء الاتصال بالخادم', 'error');
                 }
-
-                if (res.ok) {
-                    loadUsers();
-                    loadStats();
-                    alert('تم حذف المستخدم بنجاح');
-                } else {
-                    alert('حدث خطأ أثناء الحذف');
-                }
-            } catch (error) {
-                alert('حدث خطأ');
-            }
+            });
         }
 
         // Subscription Actions
-        async function approveSubscription(subId, userName, phone, planName, planId) {
-            if (!confirm(`هل تريد تفعيل اشتراك "${userName}"؟\n\nسيتم إرسال رسالة واتساب تلقائية بتفاصيل الاشتراك.`)) return;
+        async function approveSubscription(subId, userName, phone, planName, planIdOrDuration) {
+            showConfirm('تفعيل الاشتراك', `هل تريد تفعيل اشتراك "${userName}"؟\nسيتم إرسال رسالة واتساب تلقائية بتفاصيل الاشتراك.`, async () => {
+                try {
+                    let duration = planIdOrDuration;
 
-            try {
-                // Get plan details
-                const planRes = await fetch(`/api/admin/plans`);
-                const plans = await planRes.json();
-                const plan = plans.find(p => p.id === planId);
+                    // If planIdOrDuration looks like a planId (assuming duration is < 4000 days and planId might be larger or UUID-like)
+                    // In this system, plan IDs seem to be small integers too.
+                    // But if it's from activation-requests, it's definitely duration_days.
+                    // If it's from subscriptions tab, it's planId.
 
-                // Approve subscription
-                const approveRes = await fetch(`/api/admin/subscriptions/${subId}/approve`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        sendWhatsApp: true,
-                        phone: phone,
-                        userName: userName,
-                        planName: planName,
-                        duration: plan.duration_days
-                    })
-                });
+                    if (planIdOrDuration && planIdOrDuration > 1000) { // Likely an actual ID
+                        const planRes = await fetch(`/api/admin/plans`);
+                        const plans = await planRes.json();
+                        const plan = plans.find(p => p.id == planIdOrDuration);
+                        if (plan) duration = plan.duration_days;
+                    }
 
-                if (!approveRes.ok) throw new Error('فشل التفعيل');
+                    const approveRes = await fetch(`/api/admin/subscriptions/${subId}/approve`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sendWhatsApp: true,
+                            phone: phone,
+                            userName: userName,
+                            planName: planName,
+                            duration: duration
+                        })
+                    });
 
-                loadSubscriptions();
-                loadStats();
-                alert(`✅ تم تفعيل اشتراك "${userName}" بنجاح!\n\n📱 سيتم إرسال رسالة واتساب خلال لحظات...`);
-            } catch (error) {
-                console.error('Error:', error);
-                alert('❌ حدث خطأ أثناء التفعيل. تأكد من ربط جلسة الواتساب.');
-            }
+                    if (!approveRes.ok) throw new Error('فشل التفعيل');
+
+                    showToast(`✅ تم تفعيل اشتراك "${userName}" بنجاح!`, 'success');
+                    if (typeof loadSubscriptions === 'function') loadSubscriptions();
+                    if (typeof loadActivationRequests === 'function') loadActivationRequests();
+                    loadStats();
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('❌ حدث خطأ أثناء التفعيل. تأكد من ربط جلسة الواتساب.', 'error');
+                }
+            });
         }
 
-        async function rejectSubscription(subId) {
-            if (!confirm('هل تريد رفض هذا الطلب؟')) return;
+        async function rejectSubscription(subId, userName = '') {
+            const nameMsg = userName ? ` طلب "${userName}"` : 'هذا الطلب';
+            showConfirm('رفض الاشتراك', `هل تريد رفض ${nameMsg}؟`, async () => {
+                try {
+                    const res = await fetch(`/api/admin/subscriptions/${subId}/reject`, { method: 'PUT' });
+                    if (!res.ok) throw new Error('فشل الرفض');
 
-            try {
-                await fetch(`/api/admin/subscriptions/${subId}/reject`, { method: 'PUT' });
-                loadSubscriptions();
-                alert('تم رفض الطلب');
-            } catch (error) {
-                alert('حدث خطأ');
-            }
+                    showToast('تم رفض الطلب بنجاح', 'info');
+                    if (typeof loadSubscriptions === 'function') loadSubscriptions();
+                    if (typeof loadActivationRequests === 'function') loadActivationRequests();
+                    loadStats();
+                } catch (error) {
+                    showToast('حدث خطأ أثناء الرفض', 'error');
+                }
+            });
         }
 
         async function extendSubscription(subId) {
@@ -2812,6 +3448,7 @@
                 duration_days: parseInt(document.getElementById('plan-duration').value),
                 price: parseFloat(document.getElementById('plan-price').value),
                 is_trial: document.getElementById('plan-trial').checked,
+                max_sessions: parseInt(document.getElementById('plan-max-sessions').value) || 1,
                 features: {
                     prayer_times: document.getElementById('feature-prayer').checked,
                     adhkar: document.getElementById('feature-adhkar').checked
@@ -2850,15 +3487,15 @@
         });
 
         async function deletePlan(planId, planName) {
-            if (!confirm(`هل تريد حذف باقة "${planName}"؟`)) return;
-
-            try {
-                await fetch(`/api/admin/plans/${planId}`, { method: 'DELETE' });
-                loadPlans();
-                alert('تم حذف الباقة بنجاح');
-            } catch (error) {
-                alert('حدث خطأ');
-            }
+            showConfirm('حذف الباقة', `هل تريد حذف باقة "${planName}" نهائياً من النظام؟`, async () => {
+                try {
+                    await fetch(`/api/admin/plans/${planId}`, { method: 'DELETE' });
+                    loadPlans();
+                    showToast('تم حذف الباقة بنجاح', 'success');
+                } catch (error) {
+                    showToast('حدث خطأ أثناء حذف الباقة', 'error');
+                }
+            });
         }
 
         // Edit Plan
@@ -2869,10 +3506,18 @@
                 document.getElementById('edit-plan-duration').value = plan.duration_days || '';
                 document.getElementById('edit-plan-price').value = plan.price || '';
                 document.getElementById('edit-plan-trial').checked = !!plan.is_trial;
+                document.getElementById('edit-plan-max-sessions').value = plan.max_sessions || 1;
 
                 const features = JSON.parse(plan.features || '{}');
                 document.getElementById('edit-feature-prayer').checked = !!features.prayer_times;
                 document.getElementById('edit-feature-adhkar').checked = !!features.adhkar;
+                document.getElementById('edit-feature-morning-evening').checked = !!features.morning_evening;
+                document.getElementById('edit-feature-before-after').checked = !!features.before_after_prayer;
+                document.getElementById('edit-feature-quran').checked = !!features.quran;
+                document.getElementById('edit-feature-hadith').checked = !!features.hadith;
+                document.getElementById('edit-feature-fasting').checked = !!features.fasting;
+                document.getElementById('edit-feature-rosary').checked = !!features.rosary;
+                document.getElementById('edit-feature-support').checked = !!features.support;
 
                 document.getElementById('edit-plan-modal').classList.add('active');
             } catch (e) {
@@ -2890,9 +3535,17 @@
                 duration_days: parseInt(document.getElementById('edit-plan-duration').value),
                 price: parseFloat(document.getElementById('edit-plan-price').value),
                 is_trial: document.getElementById('edit-plan-trial').checked,
+                max_sessions: parseInt(document.getElementById('edit-plan-max-sessions').value) || 1,
                 features: {
                     prayer_times: document.getElementById('edit-feature-prayer').checked,
-                    adhkar: document.getElementById('edit-feature-adhkar').checked
+                    adhkar: document.getElementById('edit-feature-adhkar').checked,
+                    morning_evening: document.getElementById('edit-feature-morning-evening').checked,
+                    before_after_prayer: document.getElementById('edit-feature-before-after').checked,
+                    quran: document.getElementById('edit-feature-quran').checked,
+                    hadith: document.getElementById('edit-feature-hadith').checked,
+                    fasting: document.getElementById('edit-feature-fasting').checked,
+                    rosary: document.getElementById('edit-feature-rosary').checked,
+                    support: document.getElementById('edit-feature-support').checked
                 }
             };
 
@@ -2940,14 +3593,84 @@
         // WhatsApp Session Management
         let currentSessionId = null;
 
+        async function viewUserSessions(userId, userName, userDetails = null) {
+            document.getElementById('user-sessions-title').textContent = `بيانات وسجل: ${userName}`;
+            const tbody = document.getElementById('user-sessions-tbody');
+            const profileInfo = document.getElementById('user-profile-info');
+            
+            // Show profile info if provided (especially for admin)
+            if (userDetails) {
+                profileInfo.style.display = 'block';
+                document.getElementById('prof-email').textContent = userDetails.email || '-';
+                document.getElementById('prof-phone').textContent = userDetails.phone || '-';
+                document.getElementById('prof-date').textContent = userDetails.created_at ? new Date(userDetails.created_at).toLocaleDateString('ar-EG') : '-';
+                document.getElementById('prof-role').textContent = userDetails.role === 'admin' ? 'مدير النظام' : 'مستخدم';
+            } else {
+                profileInfo.style.display = 'none';
+            }
+
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
+            document.getElementById('user-sessions-modal').classList.add('active');
+
+            try {
+                const res = await fetch(`/api/whatsapp/list?userId=${userId}`);
+                const sessions = await res.json();
+
+                if (sessions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">لا توجد جلسات لهذا المستخدم</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = sessions.map(session => `
+                    <tr>
+                        <td data-label="الجلسة"><strong>${session.name}</strong><br><small>${session.session_id}</small></td>
+                        <td data-label="رقم الهاتف" style="direction: ltr; text-align: right;">${session.phoneNumber ? '+' + session.phoneNumber : '-'}</td>
+                        <td data-label="الحالة">
+                            <span class="status-badge ${session.connected ? 'status-active' : 'status-expired'}">
+                                ${session.connected ? 'متصل' : 'غير متصل'}
+                            </span>
+                        </td>
+                        <td data-label="تاريخ الإنشاء">${new Date(session.created_at).toLocaleDateString('ar-EG')}</td>
+                        <td data-label="الإجراءات">
+                             <div style="display: flex; gap: 5px;">
+                                ${session.connected ?
+                            `<button class="action-btn warning" onclick="disconnectSession('${session.session_id}'); setTimeout(() => viewUserSessions('${userId}', '${userName}', ${JSON.stringify(userDetails)}), 1000);" title="قطع الاتصال"><i class="fas fa-unlink"></i></button>` :
+                            `<button class="action-btn primary" onclick="reconnectSession('${session.session_id}'); setTimeout(() => viewUserSessions('${userId}', '${userName}', ${JSON.stringify(userDetails)}), 1000);" title="إعادة ربط"><i class="fas fa-qrcode"></i></button>`
+                        }
+                                <button class="action-btn danger" onclick="deleteSession('${session.session_id}'); setTimeout(() => viewUserSessions('${userId}', '${userName}', ${JSON.stringify(userDetails)}), 1000);" title="حذف الجلسة"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading user sessions:', error);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--danger);">حدث خطأ أثناء تحميل البيانات</td></tr>';
+            }
+        }
+
         async function loadSessions() {
             try {
-                const res = await fetch('/api/whatsapp/list');
+                const res = await fetch('/api/whatsapp/list'); // This now returns only admin sessions by default
                 const sessions = await res.json();
 
                 // Update stats
                 document.getElementById('stats-total-sessions').textContent = sessions.length;
                 document.getElementById('stats-connected-sessions').textContent = sessions.filter(s => s.connected).length;
+
+                // Restrict Add Session for admin if needed (usually 999)
+                const adminMaxSessions = <%= maxSessions %>;
+                const addSessionBtnGroup = document.querySelector('[onclick="openAddSessionModal()"]');
+                if (addSessionBtnGroup) {
+                    if (sessions.length >= adminMaxSessions) {
+                        addSessionBtnGroup.disabled = true;
+                        addSessionBtnGroup.innerHTML = '<i class="fas fa-lock"></i> تم الوصول للحد (' + adminMaxSessions + ')';
+                        addSessionBtnGroup.style.opacity = '0.7';
+                    } else {
+                        addSessionBtnGroup.disabled = false;
+                        addSessionBtnGroup.innerHTML = '<i class="fas fa-plus-circle"></i> إضافة جلسة جديدة';
+                        addSessionBtnGroup.style.opacity = '1';
+                    }
+                }
 
                 const tbody = document.getElementById('sessions-tbody');
 
@@ -2963,43 +3686,57 @@
                     return;
                 }
 
-                tbody.innerHTML = sessions.map(session => `
-                    <tr>
-                        <td>
-                            <div style="font-weight: 600;">${session.name}</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace;">${session.session_id.substring(0, 15)}...</div>
-                        </td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
-                                    ${session.user_name ? session.user_name.charAt(0).toUpperCase() : '?'}
+                tbody.innerHTML = sessions.map(session => {
+                    const phone = session.phoneNumber ? '+' + session.phoneNumber : '-';
+                    const formattedPhone = phone !== '-' ? phone.replace(/(\+\d{1,3})(\d+)/, '$1 $2') : '-';
+
+                    return `
+                        <tr>
+                            <td data-label="الجلسة">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 35px; height: 35px; background: var(--bg-secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600;">${session.name}</div>
+                                        <small style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">${session.session_id.substring(0, 15)}...</small>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div>${session.user_name || 'غير معروف'}</div>
-                                    <small style="color: var(--text-muted);">${session.user_phone || ''}</small>
+                            </td>
+                            <td data-label="المستخدم">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700;">
+                                        ${session.user_name ? session.user_name.charAt(0).toUpperCase() : '?'}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 500;">${session.user_name || 'غير معروف'}</div>
+                                        <small style="color: var(--text-muted); font-family: monospace;">${session.user_phone || ''}</small>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>${session.device_type}</td>
-                        <td style="direction: ltr; text-align: right;">${session.phoneNumber ? '+' + session.phoneNumber : '-'}</td>
-                        <td>
-                            <span class="status-badge ${session.connected ? 'status-active' : 'status-expired'}">
-                                ${session.connected ? 'متصل' : 'غير متصل'}
-                            </span>
-                        </td>
-                        <td>${new Date(session.created_at).toLocaleDateString('ar-EG')}</td>
-                        <td>
-                             <button class="action-btn" style="background: var(--bg-secondary);" onclick="sendTestMessageModal('${session.session_id}')" title="إرسال رسالة" ${!session.connected ? 'disabled' : ''}>
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                            ${session.connected ?
-                        `<button class="action-btn warning" onclick="disconnectSession('${session.session_id}')" title="قطع الاتصال"><i class="fas fa-unlink"></i></button>` :
-                        `<button class="action-btn primary" onclick="reconnectSession('${session.session_id}')" title="إعادة ربط"><i class="fas fa-qrcode"></i></button>`
-                    }
-                            <button class="action-btn danger" onclick="deleteSession('${session.session_id}')"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
+                            </td>
+                            <td data-label="الجهاز"><span style="background: var(--bg-secondary); padding: 4px 8px; border-radius: 6px; font-size: 0.85rem;">${session.device_type}</span></td>
+                            <td data-label="رقم الهاتف" style="direction: ltr; text-align: right; font-weight: 600;">${formattedPhone}</td>
+                            <td data-label="الحالة">
+                                <span class="status-badge ${session.connected ? 'status-active' : 'status-expired'}">
+                                    ${session.connected ? 'متصل' : 'غير متصل'}
+                                </span>
+                            </td>
+                            <td data-label="تاريخ الإنشاء"><span style="color: var(--text-muted); font-size: 0.85rem;">${new Date(session.created_at).toLocaleDateString('ar-EG')}</span></td>
+                            <td data-label="الإجراءات">
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="action-btn" style="background: var(--bg-secondary);" onclick="sendTestMessageModal('${session.session_id}')" title="إرسال رسالة" ${!session.connected ? 'disabled' : ''}>
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                    ${session.connected ?
+                            `<button class="action-btn warning" onclick="disconnectSession('${session.session_id}')" title="قطع الاتصال"><i class="fas fa-unlink"></i></button>` :
+                            `<button class="action-btn primary" onclick="reconnectSession('${session.session_id}')" title="إعادة ربط"><i class="fas fa-qrcode"></i></button>`
+                        }
+                                    <button class="action-btn danger" onclick="deleteSession('${session.session_id}')" title="حذف الجلسة"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
 
             } catch (error) {
                 console.error('Error loading sessions:', error);
@@ -3009,7 +3746,7 @@
         let allCountries = [];
 
         function openAddSessionModal() {
-            // Initialize countries with flags
+            // Initialize countries
             allCountries = [
                 { code: '+20', name: 'مصر', flag: '🇪🇬' },
                 { code: '+966', name: 'السعودية', flag: '🇸🇦' },
@@ -3028,38 +3765,25 @@
                 { code: '+212', name: 'المغرب', flag: '🇲🇦' },
                 { code: '+216', name: 'تونس', flag: '🇹🇳' },
                 { code: '+249', name: 'السودان', flag: '🇸🇩' },
+                { code: '+90', name: 'تركيا', flag: '🇹🇷' },
                 { code: '+1', name: 'أمريكا', flag: '🇺🇸' },
                 { code: '+44', name: 'بريطانيا', flag: '🇬🇧' },
-                { code: '+33', name: 'فرنسا', flag: '🇫🇷' },
                 { code: '+49', name: 'ألمانيا', flag: '🇩🇪' },
-                { code: '+39', name: 'إيطاليا', flag: '🇮🇹' },
+                { code: '+33', name: 'فرنسا', flag: '🇫🇷' },
                 { code: '+34', name: 'إسبانيا', flag: '🇪🇸' },
-                { code: '+90', name: 'تركيا', flag: '🇹🇷' },
-                { code: '+98', name: 'إيران', flag: '🇮🇷' },
-                { code: '+92', name: 'باكستان', flag: '🇵🇰' },
-                { code: '+91', name: 'الهند', flag: '🇮🇳' },
-                { code: '+86', name: 'الصين', flag: '🇨🇳' },
-                { code: '+81', name: 'اليابان', flag: '🇯🇵' },
-                { code: '+82', name: 'كوريا الجنوبية', flag: '🇰🇷' },
-                { code: '+55', name: 'البرازيل', flag: '🇧🇷' },
-                { code: '+52', name: 'المكسيك', flag: '🇲🇽' },
-                { code: '+7', name: 'روسيا', flag: '🇷🇺' },
-                { code: '+61', name: 'أستراليا', flag: '🇦🇺' },
-                { code: '+27', name: 'جنوب أفريقيا', flag: '🇿🇦' },
-                { code: '+234', name: 'نيجيريا', flag: '🇳🇬' },
-                { code: '+254', name: 'كينيا', flag: '🇰🇪' },
-                { code: '+60', name: 'ماليزيا', flag: '🇲🇾' },
-                { code: '+65', name: 'سنغافورة', flag: '🇸🇬' },
-                { code: '+66', name: 'تايلاند', flag: '🇹🇭' },
-                { code: '+84', name: 'فيتنام', flag: '🇻🇳' },
-                { code: '+62', name: 'إندونيسيا', flag: '🇮🇩' },
-                { code: '+63', name: 'الفلبين', flag: '🇵🇭' }
+                { code: '+39', name: 'إيطاليا', flag: '🇮🇹' }
             ];
+
+            // Reset form
+            document.getElementById('session-name').value = '';
+            document.getElementById('session-phone').value = '';
+            document.getElementById('session-webhook').value = '';
 
             // Set Egypt as default
             document.getElementById('country-search').value = 'مصر';
             document.getElementById('country-code').value = '+20';
             document.getElementById('selected-flag').textContent = '🇪🇬';
+            document.getElementById('display-prefix').textContent = '+20';
 
             document.getElementById('add-session-modal').classList.add('active');
         }
@@ -3074,18 +3798,21 @@
             }
 
             const filtered = allCountries.filter(country =>
-                country.name.includes(searchTerm) ||
-                country.code.includes(searchTerm)
+                country.name.toLowerCase().includes(searchTerm) ||
+                country.code.includes(searchTerm) ||
+                (typeof country.name_en !== 'undefined' && country.name_en.toLowerCase().includes(searchTerm))
             );
 
             dropdown.innerHTML = filtered.map(country => `
                 <div onclick="selectCountry('${country.code}', '${country.name}', '${country.flag}')" 
-                     style="padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border);" 
+                     style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border);" 
                      onmouseover="this.style.background='var(--bg-secondary)'" 
                      onmouseout="this.style.background='transparent'">
-                    <span style="font-size: 1.2em;">${country.flag}</span>
-                    <span>${country.name}</span>
-                    <span style="color: var(--text-muted); margin-right: auto;">${country.code}</span>
+                    <span style="font-size: 1.3rem;">${country.flag}</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 0.95rem;">${country.name}</div>
+                    </div>
+                    <span style="color: var(--text-muted); font-weight: 700; font-family: monospace;">${country.code}</span>
                 </div>
             `).join('');
 
@@ -3093,18 +3820,17 @@
         }
 
         function showCountryList() {
-            document.getElementById('country-search').value = '';
-            searchCountries();
-            // Show all countries
             const dropdown = document.getElementById('country-dropdown');
             dropdown.innerHTML = allCountries.map(country => `
                 <div onclick="selectCountry('${country.code}', '${country.name}', '${country.flag}')" 
-                     style="padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border);" 
+                     style="padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border);" 
                      onmouseover="this.style.background='var(--bg-secondary)'" 
                      onmouseout="this.style.background='transparent'">
-                    <span style="font-size: 1.2em;">${country.flag}</span>
-                    <span>${country.name}</span>
-                    <span style="color: var(--text-muted); margin-right: auto;">${country.code}</span>
+                    <span style="font-size: 1.3rem;">${country.flag}</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 0.95rem;">${country.name}</div>
+                    </div>
+                    <span style="color: var(--text-muted); font-weight: 700; font-family: monospace;">${country.code}</span>
                 </div>
             `).join('');
             dropdown.style.display = 'block';
@@ -3114,6 +3840,7 @@
             document.getElementById('country-search').value = name;
             document.getElementById('country-code').value = code;
             document.getElementById('selected-flag').textContent = flag;
+            document.getElementById('display-prefix').textContent = code;
             document.getElementById('country-dropdown').style.display = 'none';
         }
 
@@ -3125,19 +3852,27 @@
         });
 
         async function disconnectSession(sessionId) {
-            if (!confirm('هل تريد قطع اتصال هذه الجلسة؟')) return;
-            try {
-                await fetch(`/api/whatsapp/${sessionId}/disconnect`, { method: 'POST' });
-                loadSessions();
-            } catch (e) { alert('حدث خطأ'); }
+            showConfirm('قطع الاتصال', 'هل تريد قطع اتصال هذه الجلسة بالواتساب؟ سيتم إيقاف التذكيرات الخاصة بهذا المستخدم.', async () => {
+                try {
+                    await fetch(`/api/whatsapp/${sessionId}/disconnect`, { method: 'POST' });
+                    loadSessions();
+                    showToast('تم قطع الاتصال بنجاح', 'success');
+                } catch (e) {
+                    showToast('حدث خطأ أثناء قطع الاتصال', 'error');
+                }
+            });
         }
 
         async function deleteSession(sessionId) {
-            if (!confirm('هل تريد حذف هذه الجلسة نهائياً؟ سيتم مسح بيانات الاتصال.')) return;
-            try {
-                await fetch(`/api/whatsapp/${sessionId}`, { method: 'DELETE' });
-                loadSessions();
-            } catch (e) { alert('حدث خطأ'); }
+            showConfirm('حذف الجلسة', 'هل تريد حذف هذه الجلسة نهائياً؟ سيتم مسح جميع بيانات الاتصال ولا يمكن استعادتها.', async () => {
+                try {
+                    await fetch(`/api/whatsapp/${sessionId}`, { method: 'DELETE' });
+                    loadSessions();
+                    showToast('تم حذف الجلسة بنجاح', 'success');
+                } catch (e) {
+                    showToast('حدث خطأ أثناء حذف الجلسة', 'error');
+                }
+            });
         }
 
         function reconnectSession(sessionId) {
@@ -3237,7 +3972,7 @@
             document.getElementById('status-connecting').style.display = 'none';
             document.getElementById('status-connected').style.display = 'none';
             document.getElementById('status-error').style.display = 'none';
-            document.getElementById('close-qr-btn').style.display = 'none';
+            document.getElementById('error-message').textContent = 'حدث خطأ في الاتصال';
 
             // Show popup
             document.getElementById('qr-popup').classList.add('active');
@@ -3256,26 +3991,49 @@
                 try {
                     const res = await fetch(`/api/whatsapp/status/${sessionId}`);
                     const data = await res.json();
-
-                    if (data.hasQR) {
-                        // Fetch QR specifically if needed (or if src is empty/undefined)
-                        const img = document.getElementById('qr-popup-image');
-                        if (!img.src || img.src.includes('undefined')) {
-                            const qrRes = await fetch(`/api/whatsapp/qr/${sessionId}`);
-                            const qrData = await qrRes.json();
-                            if (qrData.success && qrData.qrCode) {
-                                img.src = qrData.qrCode;
-                            }
-                        }
-                    }
+                    console.log('QR Monitor Check:', { sessionId, connected: data.connected, hasQR: data.hasQR, qrLength: data.qrCode ? data.qrCode.length : 0 });
 
                     if (data.connected) {
                         showQRConnected();
                         stopQRMonitoring();
                         setTimeout(closeQRPopup, 2000);
+                        return;
+                    }
+
+                    if (data.hasQR) {
+                        // We have a QR available signal
+                        let finalQR = data.qrCode;
+
+                        // If not included in status, fetch it explicitly
+                        if (!finalQR) {
+                            try {
+                                console.log('Fetching QR separately for:', sessionId);
+                                const qrRes = await fetch(`/api/whatsapp/qr/${sessionId}`);
+                                const qrData = await qrRes.json();
+                                console.log('QR Response:', { success: qrData.success, hasQrCode: !!qrData.qrCode, qrLength: qrData.qrCode ? qrData.qrCode.length : 0 });
+                                if (qrData.success && qrData.qrCode) {
+                                    finalQR = qrData.qrCode;
+                                } else {
+                                    console.warn('QR fetch returned no code:', qrData);
+                                }
+                            } catch (err) {
+                                console.error('Error fetching separate QR:', err);
+                            }
+                        }
+
+                        // Update UI completely
+                        if (finalQR) {
+                            const img = document.getElementById('qr-popup-image');
+                            if (img.src !== finalQR) {
+                                img.src = finalQR;
+                            }
+                            // Force display update
+                            document.getElementById('status-waiting').style.display = 'none';
+                            document.getElementById('status-connecting').style.display = 'block';
+                        }
                     }
                 } catch (error) {
-                    console.error(error);
+                    console.error('QR Monitoring Error:', error);
                 }
             }, 2000);
         }
@@ -3291,6 +4049,27 @@
 
         // Load data on page load
         document.addEventListener('DOMContentLoaded', () => {
+            // Handle hash-based or query-based tab switching
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            const hash = window.location.hash ? window.location.hash.substring(1) : null;
+            const targetTab = hash || tabParam;
+
+            if (targetTab) {
+                if (targetTab === 'whatsapp') {
+                    switchTab('whatsapp');
+                } else if (targetTab === 'overview' || targetTab === 'dashboard' || targetTab === 'stats') {
+                    switchTab('stats'); // Admin dashboard uses 'stats' for overview
+                } else if (targetTab === 'users' || targetTab === 'plans' || targetTab === 'payments' || targetTab === 'logs') {
+                    switchTab(targetTab);
+                }
+            }
+
+            // Request Browser Notification status
+            if ("Notification" in window && Notification.permission === "default") {
+                Notification.requestPermission();
+            }
+
             loadSidebarState();
             loadStats();
             loadUsers();
@@ -3372,55 +4151,6 @@
             }
         });
 
-        // WhatsApp Session Management
-        let qrInterval = null;
-
-        function startQRMonitoring(sessionId) {
-            if (qrInterval) clearInterval(qrInterval);
-
-            currentSessionId = sessionId;
-
-            qrInterval = setInterval(async () => {
-                if (!document.getElementById('qr-popup').classList.contains('active')) {
-                    clearInterval(qrInterval);
-                    return;
-                }
-
-                try {
-                    const res = await fetch(`/api/whatsapp/status/${sessionId}`);
-                    const data = await res.json();
-
-                    // Update QR if available
-                    if (data.hasQR && data.qrCode) {
-                        const img = document.getElementById('qr-popup-image');
-                        if (img.src !== data.qrCode) {
-                            img.src = data.qrCode;
-                        }
-                    } else if (data.hasQR) {
-                        // Fetch QR separately
-                        try {
-                            const qrRes = await fetch(`/api/whatsapp/qr/${sessionId}`);
-                            const qrData = await qrRes.json();
-                            if (qrData.success && qrData.qrCode) {
-                                document.getElementById('qr-popup-image').src = qrData.qrCode;
-                            }
-                        } catch (qrErr) {
-                            console.error('QR fetch error:', qrErr);
-                        }
-                    }
-
-                    if (data.active || data.connected) {
-                        // Check connected status
-                        clearInterval(qrInterval);
-                        showQRConnected();
-                        loadSessions(); // Refresh list
-                    }
-                } catch (e) {
-                    console.error('Monitoring error:', e);
-                }
-            }, 2000); // Check every 2 seconds
-        }
-
         function showQRConnecting() {
             document.getElementById('status-waiting').style.display = 'none';
             document.getElementById('status-connecting').style.display = 'block';
@@ -3430,8 +4160,6 @@
             document.getElementById('status-waiting').style.display = 'none';
             document.getElementById('status-connecting').style.display = 'none';
             document.getElementById('status-connected').style.display = 'block';
-            document.getElementById('close-qr-btn').style.display = 'inline-block';
-            document.getElementById('qr-code-container').style.display = 'none';
         }
 
         function showQRError(msg) {
@@ -3444,13 +4172,75 @@
 
         // Send Test Message Modal
         function sendTestMessageModal(sessionId) {
-            const phone = prompt('أدخل رقم الهاتف (مع رمز الدولة):');
-            if (!phone) return;
+            document.getElementById('test-session-id').value = sessionId;
+            document.getElementById('test-phone-number').value = '';
+            document.getElementById('test-message-text').value = 'رسالة تجريبية من نظام واصل';
+            document.getElementById('test-message-modal').classList.add('active');
+        }
 
-            const message = prompt('أدخل نص الرسالة:', 'رسالة تجريبية من النظام');
-            if (!message) return;
+        function closeTestModal() {
+            document.getElementById('test-message-modal').classList.remove('active');
+        }
 
-            sendTestMessage(sessionId, phone, message);
+        async function submitTestMessage() {
+            const sessionId = document.getElementById('test-session-id').value;
+            const phone = document.getElementById('test-phone-number').value;
+            const message = document.getElementById('test-message-text').value;
+
+            if (!phone || !message) {
+                // Use toast if available
+                if (typeof showToast === 'function') {
+                    showToast('⚠️ يرجى تعبئة جميع الحقول', 'error');
+                } else {
+                    alert('⚠️ يرجى تعبئة جميع الحقول');
+                }
+                return;
+            }
+
+            // Show sending state
+            const btn = document.querySelector('#test-message-modal .action-btn.primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/whatsapp/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: sessionId,
+                        phoneNumber: phone,
+                        message: message
+                    })
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    closeTestModal();
+                    if (typeof showToast === 'function') {
+                        showToast('✅ تم إرسال الرسالة بنجاح!', 'success');
+                    } else {
+                        alert('✅ تم إرسال الرسالة بنجاح!');
+                    }
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast('❌ فشل إرسال الرسالة: ' + (result.error || 'خطأ غير معروف'), 'error');
+                    } else {
+                        alert('❌ فشل إرسال الرسالة: ' + (result.error || 'خطأ غير معروف'));
+                    }
+                }
+            } catch (error) {
+                console.error('Send message error:', error);
+                if (typeof showToast === 'function') {
+                    showToast('❌ خطأ في الإرسال: ' + error.message, 'error');
+                } else {
+                    alert('❌ خطأ في الإرسال: ' + error.message);
+                }
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
 
         // Send Test Message Function
@@ -3528,25 +4318,140 @@
             }
         }
 
-        // Add sample notifications
-        function loadNotifications() {
-            const notificationsList = document.getElementById('notifications-list');
-            const pendingCount = document.querySelectorAll('#subscriptions-tbody tr').length - 1;
+        // Fetch and display notifications from API
+        let lastNotificationId = 0;
+        let isInitialLoad = true;
 
-            if (pendingCount > 0) {
-                updateNotificationBadge(1);
-                notificationsList.innerHTML = `
-                    <div style="padding: 1rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='var(--bg-secondary)'" onmouseout="this.style.background='transparent'" onclick="switchTab('subscriptions')">
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                            <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent);"></div>
-                            <span style="color: var(--text-main); font-weight: 600;">طلبات بانتظار الموافقة</span>
+        async function loadNotifications() {
+            try {
+                const res = await fetch('/api/admin/notifications');
+                if (!res.ok) return;
+
+                const notifications = await res.json();
+                const unreadNotifs = notifications.filter(n => !n.is_read);
+                const unreadCount = unreadNotifs.length;
+
+                updateNotificationBadge(unreadCount);
+
+                // Update Sidebar Payments Badge (Filter for unread payment-related notifications)
+                const paymentsBadge = document.getElementById('payments-badge');
+                if (paymentsBadge) {
+                    const pendingPaymentNotifs = notifications.filter(n => !n.is_read && n.type === 'warning').length;
+                    paymentsBadge.textContent = pendingPaymentNotifs;
+                    paymentsBadge.style.display = pendingPaymentNotifs > 0 ? 'flex' : 'none';
+                }
+
+                const notificationsList = document.getElementById('notifications-list');
+                if (notifications.length === 0) {
+                    notificationsList.innerHTML = `
+                        <div style="padding: 1.5rem; text-align: center; color: var(--text-muted);">
+                            <i class="fas fa-bell-slash" style="font-size: 2rem; opacity: 0.2; display: block; margin-bottom: 10px;"></i>
+                            لا توجد إشعارات حالياً
                         </div>
-                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">يوجد ${pendingCount} طلب(ات) بانتظار الموافقة</p>
+                    `;
+                    return;
+                }
+
+                // Detect NEW notifications for Sound, Toast & Browser Notification
+                if (notifications.length > 0) {
+                    const latestId = Math.max(...notifications.map(n => n.id));
+
+                    if (!isInitialLoad && latestId > lastNotificationId) {
+                        const newOnes = notifications.filter(n => n.id > lastNotificationId).reverse();
+                        newOnes.forEach(n => {
+                            // 1. Show In-App Toast
+                            if (typeof showToast === 'function') {
+                                showToast(`${n.title}: ${n.message}`, n.type === 'warning' ? 'warning' : 'info');
+                            }
+
+                            // 2. Trigger Browser Notification
+                            if ('Notification' in window && Notification.permission === 'granted' && !document.hasFocus()) {
+                                const notification = new Notification(n.title, {
+                                    body: n.message,
+                                    icon: '/favicon.png',
+                                    dir: 'rtl'
+                                });
+                                notification.onclick = () => {
+                                    window.focus();
+                                    if (n.type === 'warning') switchTab('payments');
+                                    markAsRead(n.id, n.type);
+                                };
+                            }
+                        });
+
+                        // 3. Play sound alert
+                        try {
+                            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
+                            audio.volume = 0.5;
+                            audio.play().catch(e => console.log('Audio play blocked'));
+                        } catch (e) { }
+                    }
+                    lastNotificationId = latestId;
+                }
+                isInitialLoad = false;
+
+                notificationsList.innerHTML = notifications.map(n => `
+                    <div style="padding: 1rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; position: relative; ${!n.is_read ? 'background: var(--primary-light);' : ''}" 
+                         onmouseover="this.style.background='var(--bg-secondary)'" 
+                         onmouseout="this.style.background='${!n.is_read ? 'var(--primary-light)' : 'transparent'}'"
+                         onclick="markAsRead('${n.id}', '${n.type}')">
+                        <div style="display: flex; gap: 12px; align-items: flex-start;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${n.type === 'warning' ? '#fff3e0' : '#e3f2fd'}; color: ${n.type === 'warning' ? '#fb8c00' : '#1e88e5'};">
+                                <i class="fas ${n.type === 'warning' ? 'fa-money-bill-wave' : 'fa-info-circle'}"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                    <span style="color: var(--text-main); font-weight: 600; font-size: 0.9rem;">${n.title}</span>
+                                    <span style="color: var(--text-muted); font-size: 0.75rem;">${formatTimeAgo(n.created_at)}</span>
+                                </div>
+                                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0; line-height: 1.4;">${n.message}</p>
+                            </div>
+                        </div>
                     </div>
-                `;
-            } else {
-                updateNotificationBadge(0);
+                `).join('');
+            } catch (error) {
+                console.error('Error loading notifications:', error);
             }
+        }
+
+        async function markAsRead(id, type) {
+            try {
+                await fetch(`/api/admin/notifications/${id}/read`, { method: 'POST' });
+                loadNotifications();
+
+                // If it's a payment notification, go to payments tab
+                if (type === 'warning') {
+                    switchTab('payments');
+                    document.getElementById('notifications-dropdown').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error marking as read:', error);
+            }
+        }
+
+        async function markAllNotificationsAsRead() {
+            try {
+                await fetch('/api/admin/notifications/read-all', { method: 'POST' });
+                loadNotifications();
+            } catch (error) {
+                console.error('Error marking all as read:', error);
+            }
+        }
+
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+
+            if (diffInSeconds < 60) return 'الآن';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}د`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}س`;
+            return date.toLocaleDateString('ar-EG');
+        }
+
+        // Request browser notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
         }
 
         // Initialize header on page load
@@ -3822,6 +4727,52 @@
             }
         }
     </script>
+    <!-- Test Message Modal -->
+    <div id="test-message-modal" class="modal" style="z-index: 10001;">
+        <div class="modal-content"
+            style="max-width: 500px; background: var(--bg-card); border-radius: 16px; padding: 24px;">
+            <div class="modal-header" style="justify-content: space-between; margin-bottom: 20px;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-paper-plane" style="color: var(--primary);"></i>
+                    إرسال رسالة تجريبية
+                </h3>
+                <span class="close-modal" onclick="closeTestModal()"
+                    style="cursor: pointer; font-size: 1.5rem;">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="test-session-id">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">رقم الهاتف</label>
+                    <input type="text" id="test-phone-number" class="form-control"
+                        placeholder="أدخل رقم الهاتف (مثال: 010xxxxxxx)" dir="ltr"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                    <small style="display: block; margin-top: 5px; color: var(--text-muted); font-size: 0.85rem;">
+                        <i class="fas fa-info-circle"></i> سيتم تحويل الأرقام المحلية (010x) إلى الصيغة الدولية
+                        تلقائياً.
+                    </small>
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">نص الرسالة</label>
+                    <textarea id="test-message-text" class="form-control" rows="4" placeholder="اكتب رسالتك هنا..."
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">رسالة تجريبية من نظام واصل</textarea>
+                </div>
+                <div class="form-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="action-btn danger" onclick="closeTestModal()"
+                        style="padding: 10px 20px; border-radius: 8px;">إلغاء</button>
+                    <button class="action-btn primary" onclick="submitTestMessage()"
+                        style="padding: 10px 20px; border-radius: 8px;">إرسال الرسالة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Modal CSS -->
+    <style>
+        .modal.active {
+            display: flex !important;
+        }
+    </style>
+    <div id="toast-container" class="toast-container"></div>
 </body>
 
 </html>

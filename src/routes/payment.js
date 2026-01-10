@@ -6,6 +6,7 @@ const fs = require('fs');
 const PaymentService = require('../services/PaymentService');
 const AuthService = require('../services/auth');
 const SettingsService = require('../services/settings');
+const NotificationService = require('../services/NotificationService');
 
 // Configure Multer for local storage
 const storage = multer.diskStorage({
@@ -88,7 +89,6 @@ router.post('/submit', upload.single('receipt'), async (req, res) => {
         const plan = await db.get('SELECT * FROM plans WHERE id = ?', [planId]);
 
         // Send notification in background (don't wait for it)
-        const NotificationService = require('../services/NotificationService');
         NotificationService.sendPaymentNotification({
             userId,
             userName: user?.name || 'Unknown',
@@ -102,6 +102,13 @@ router.post('/submit', upload.single('receipt'), async (req, res) => {
         }).catch(err => {
             console.warn('⚠️ Notification failed:', err.message);
         });
+
+        // Create DB notification for admin dashboard
+        await NotificationService.createAdminNotification(
+            'طلب دفع جديد 💰',
+            `قام ${user?.name || 'مستخدم'} بإرسال إيصال دفع بمبلغ ${amount} ج.م`,
+            'warning'
+        );
 
         // Immediately show success page to user (don't wait for WhatsApp)
         res.render('payment_success', {

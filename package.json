@@ -5,7 +5,11 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "jest --forceExit"
+    "test": "jest --forceExit",
+    "postinstall": "npm rebuild sqlite3",
+    "testsprite:server": "node tools/testsprite.js server",
+    "testsprite:run": "node tools/testsprite.js run",
+    "testsprite:rerun": "node tools/testsprite.js rerun"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",
@@ -33,6 +37,7 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@testsprite/testsprite-mcp": "^0.0.18",
     "jest": "^30.2.0",
     "supertest": "^7.1.4"
   }

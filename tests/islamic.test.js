@@ -23,7 +23,8 @@ describe('IslamicRemindersService', () => {
     describe('getOrCreateConfig', () => {
         test('should return existing config if found', async () => {
             const mockConfig = { id: 'cfg-1', user_id: 'user-1' };
-            db.get.mockResolvedValueOnce(mockConfig);
+            // Return config for first call, and truthy objects for subsequent checks (adhkar, fasting, prayers)
+            db.get.mockResolvedValue(mockConfig);
 
             const result = await IslamicRemindersService.getOrCreateConfig('user-1');
             expect(result).toEqual(mockConfig);
@@ -39,8 +40,9 @@ describe('IslamicRemindersService', () => {
 
             const result = await IslamicRemindersService.getOrCreateConfig('user-1');
 
-            // Verify inserts happen (config, prayers, fasting)
-            expect(db.run).toHaveBeenCalledTimes(1 + 5 + 1);
+            // Verify inserts happen (config, 5 prayers, fasting, adhkar)
+            // 1 config + 5 prayers + 1 fasting + 1 adhkar = 8
+            expect(db.run).toHaveBeenCalledTimes(1 + 5 + 1 + 1);
             expect(db.run).toHaveBeenCalledWith(
                 expect.stringContaining('INSERT INTO islamic_reminders_config'),
                 expect.any(Array)

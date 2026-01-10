@@ -22,7 +22,14 @@ process.on('uncaughtException', (error) => {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Apply server optimizations with enhanced security
+// Apply helmet early with standard security (CSP handled by ServerOptimizer)
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: false
+}));
+
+// Apply server optimizations
 ServerOptimizer.applyOptimizations(app);
 
 // Database & Services
@@ -54,64 +61,9 @@ app.init = async () => {
 
         // Auto-restore WhatsApp sessions on startup
         setTimeout(async () => {
-            try {
-                console.log('🔄 Restoring WhatsApp sessions...');
-                const { db } = require('./src/database/db');
-                const SessionManager = require('./src/services/baileys/SessionManager');
-
-                // Get all known sessions (try to restore everyone, connected or not)
-                const sessions = await db.all('SELECT * FROM whatsapp_sessions');
-
-                console.log(`Found ${sessions.length} sessions to restore (attempting reconnect)`);
-
-                // Attempt restoration with per-session retry/backoff
-                for (const session of sessions) {
-                    const maxAttempts = 3;
-                    let attempt = 0;
-                    let restored = false;
-
-                    while (attempt < maxAttempts && !restored) {
-                        attempt++;
-                        try {
-                            console.log(`Restoring session (attempt ${attempt}/${maxAttempts}): ${session.name || session.session_id}`);
-
-                            await SessionManager.createSession(session.session_id, {
-                                isNew: false,
-                                onConnected: async (info) => {
-                                    console.log(`✅ Session ${session.session_id} connected successfully`);
-                                    await db.run('UPDATE whatsapp_sessions SET connected = 1, last_connected = ? WHERE session_id = ?', [new Date().toISOString(), session.session_id]);
-                                },
-                                onDisconnected: async (reason) => {
-                                    console.log(`❌ Session ${session.session_id} disconnected:`, reason?.message || reason);
-                                    await db.run('UPDATE whatsapp_sessions SET connected = 0, last_disconnected = ? WHERE session_id = ?', [new Date().toISOString(), session.session_id]);
-                                }
-                            });
-
-                            // If createSession resolved without throwing, consider it attempted; actual connection will call onConnected
-                            restored = true;
-
-                            // Small delay between session restorations
-                            await new Promise(resolve => setTimeout(resolve, 1000));
-
-                        } catch (sessionError) {
-                            console.error(`Attempt ${attempt} failed for ${session.session_id}:`, sessionError.message || sessionError);
-                            if (attempt < maxAttempts) {
-                                const backoff = Math.min(2000 * Math.pow(2, attempt - 1), 10000);
-                                console.log(`Retrying in ${backoff}ms...`);
-                                await new Promise(resolve => setTimeout(resolve, backoff));
-                            } else {
-                                console.error(`Max attempts reached for ${session.session_id}. Marking disconnected.`);
-                                await db.run('UPDATE whatsapp_sessions SET connected = 0, last_disconnected = ? WHERE session_id = ?', [new Date().toISOString(), session.session_id]);
-                            }
-                        }
-                    }
-                }
-
-                console.log('🎉 Session restoration completed');
-            } catch (error) {
-                console.error('Error during session restoration:', error);
-            }
-        }, 5000); // Wait 5 seconds after server start
+            console.log('🚀 [Server] Starting automatic session restoration...');
+            await SessionManager.restoreAllSessions();
+        }, 10000); // Wait 10 seconds after server start to ensure all services are ready
 
         console.log('Server initialization completed');
     } catch (e) {
@@ -119,27 +71,6 @@ app.init = async () => {
         process.exit(1);
     }
 };
-
-// Middleware
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'", "https:", "http:", "data:", "blob:", "ws:", "wss:"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "http:"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
-            imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
-            connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
-            fontSrc: ["'self'", "https:", "http:", "data:"],
-            objectSrc: ["'none'"],
-            mediaSrc: ["'self'", "https:", "http:", "data:", "blob:"],
-            frameSrc: ["'self'", "https:", "http:"],
-            scriptSrcAttr: ["'unsafe-inline'"],
-            upgradeInsecureRequests: null
-        },
-    },
-    crossOriginEmbedderPolicy: false,
-    crossOriginResourcePolicy: false
-}));
 
 // Add JSON parsing error handler
 app.use(express.json({
@@ -175,10 +106,15 @@ app.use('/api/admin', authenticateToken, adminRoutes);
 
 // Enhanced WhatsApp API Routes with security
 const whatsappRoutes = require('./src/routes/whatsapp');
-app.use('/api/whatsapp', (req, res, next) => {
-    console.log(`Whats App API Request: ${req.method} ${req.path}`);
+app.use('/api', (req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        console.log(`[API-LOG] ${req.method} ${req.originalUrl} - Status: ${res.statusCode} (${duration}ms)`);
+    });
     next();
-}, authenticateToken, whatsappRoutes);
+});
+app.use('/api/whatsapp', authenticateToken, whatsappRoutes);
 
 // Islamic Reminders Routes (accessible to all authenticated users)
 const islamicRemindersRoutes = require('./src/routes/islamic-reminders');
@@ -187,12 +123,18 @@ app.use('/api/islamic-reminders', authenticateToken, islamicRemindersRoutes);
 
 // Hadith API Routes
 app.use('/api/hadith', authenticateToken, require('./src/routes/hadith'));
+app.use('/api/adhkar', authenticateToken, require('./src/routes/adhkar'));
 
 // Payment Routes (Public for validation)
 app.use('/payment', require('./src/routes/payment'));
 
 // Routes
 app.use('/', require('./src/routes/auth'));
+
+// Redirect legacy /dashboard/whatsapp to hash-based route
+app.get('/dashboard/whatsapp', authenticateToken, (req, res) => {
+    res.redirect('/dashboard#whatsapp');
+});
 
 app.get('/', async (req, res) => {
     try {
@@ -212,19 +154,100 @@ app.get('/', async (req, res) => {
     }
 });
 
-app.get('/dashboard', authenticateToken, async (req, res) => {
-    if (req.user.role === 'admin') {
-        return res.render('dashboard/admin', { user: req.user });
+// Middleware to fetch fresh user data from DB for dashboard pages
+const fetchFreshUser = async (req, res, next) => {
+    if (req.user && req.user.id) {
+        try {
+            const freshUser = await db.get('SELECT * FROM users WHERE id = ?', [req.user.id]);
+            if (freshUser) {
+                // Keep password_hash out of the req.user for security
+                delete freshUser.password_hash;
+                req.user = { ...req.user, ...freshUser };
+            }
+        } catch (err) {
+            console.error('Error fetching fresh user:', err);
+        }
     }
+    next();
+};
 
+app.use('/dashboard', authenticateToken, fetchFreshUser);
+
+// Middleware to prevent caching of sensitive pages
+const nocache = (req, res, next) => {
+    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.header('Expires', '-1');
+    res.header('Pragma', 'no-cache');
+    next();
+};
+
+app.get('/dashboard', nocache, async (req, res) => {
     // Fetch Subscription Details for User
     const sub = await db.get(`
-        SELECT s.*, p.name as plan_name, p.is_trial, p.features 
+        SELECT s.*, p.name as plan_name, p.is_trial, p.features, p.max_sessions 
         FROM subscriptions s
         JOIN plans p ON s.plan_id = p.id
         WHERE s.user_id = ?
         ORDER BY s.created_at DESC LIMIT 1
     `, [req.user.id]);
+
+    // Strict Access Control:
+    // If user is NOT admin and does NOT have an active subscription (pending, expired, or none),
+    // redirect them to the login page as requested.
+    if (req.user.role !== 'admin' && (!sub || sub.status !== 'active')) {
+        return res.redirect('/login');
+    }
+
+    // Parse User Features
+    let userFeatures = {
+        prayer_times: true,
+        adhkar: true,
+        morning_evening: true,
+        before_after_prayer: true,
+        quran: true,
+        hadith: true,
+        fasting: true,
+        rosary: true,
+        support: true
+    };
+
+    if (req.user.role !== 'admin' && sub && sub.features) {
+        try {
+            const features = JSON.parse(sub.features);
+            userFeatures = {
+                prayer_times: !!features.prayer_times,
+                adhkar: !!features.adhkar,
+                morning_evening: !!(features.morning_evening || features.adhkar),
+                before_after_prayer: !!(features.before_after_prayer || features.adhkar),
+                quran: !!(features.quran || features.adhkar),
+                hadith: !!(features.hadith || features.adhkar),
+                fasting: !!features.fasting,
+                rosary: !!features.rosary,
+                support: !!features.support
+            };
+        } catch (e) {
+            console.error('Error parsing sub features:', e);
+            userFeatures = {
+                prayer_times: false,
+                adhkar: false,
+                morning_evening: false,
+                before_after_prayer: false,
+                quran: false,
+                hadith: false,
+                fasting: false,
+                rosary: false,
+                support: false
+            };
+        }
+    }
+
+    if (req.user.role === 'admin') {
+        return res.render('dashboard/admin', {
+            user: req.user,
+            userFeatures,
+            maxSessions: sub ? (sub.max_sessions || 999) : 999
+        });
+    }
 
     let percentRemaining = 0;
     let daysRemaining = 0;
@@ -240,14 +263,15 @@ app.get('/dashboard', authenticateToken, async (req, res) => {
 
     res.render('dashboard/user', {
         user: req.user,
-        subscription: sub ? { ...sub, percentRemaining, daysRemaining } : null
+        subscription: sub ? { ...sub, percentRemaining, daysRemaining } : null,
+        userFeatures,
+        maxSessions: sub ? (sub.max_sessions || 1) : 1
     });
 });
 
 
-
 // Admin Settings Routes
-app.get('/dashboard/settings', authenticateToken, async (req, res) => {
+app.get('/dashboard/settings', async (req, res) => {
     if (req.user.role !== 'admin') return res.redirect('/dashboard');
 
     const settings = await SettingsService.get('landing_page');

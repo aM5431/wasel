@@ -22,7 +22,7 @@ describe('ExternalContentService', () => {
             }
         });
 
-        const content = await ExternalContentService.getDailyContent();
+        const content = await ExternalContentService.getDailyContent('image');
 
         expect(content).toBeDefined();
         expect(content.type).toBe('hadith');

@@ -1,4 +1,6 @@
 const sessionManager = require('./SessionManager');
+const fs = require('fs');
+const path = require('path');
 
 class MessageService {
     constructor() {
@@ -39,19 +41,16 @@ class MessageService {
             try {
                 // Send message
                 const result = await session.sendMessage(jid, { text: message });
-                console.log(`✅ Message sent to ${phoneNumber} via session ${sessionId}`);
+                console.log(`✅ Message sent to ${jid} via session ${sessionId}`);
                 return result;
             } catch (innerError) {
                 const errString = innerError.toString();
 
                 // Smart Error Handling
-                if (errString.includes('Bad MAC') || errString.includes('Session Error')) {
-                    console.error(`🚨 CRITICAL SESSION ERROR for ${sessionId}: ${errString}`);
-                    console.error(`[MessageService] This session appears corrupted. Advising user to re-link.`);
-
-                    // Mark session as potentially corrupted (future feature: update DB status)
-                    // For now, we stop retrying to avoid spamming errors
-                    throw new Error('CORRUPTED_SESSION: Please re-link WhatsApp');
+                if (errString.includes('Bad MAC')) {
+                    console.error(`🚨 ENCRYPTION DESYNC (Bad MAC) for ${sessionId}: ${errString}`);
+                    sessionManager.handleSessionCorruption(sessionId);
+                    throw new Error('ENCRYPTION_DESYNC: Bad MAC');
                 }
 
                 // If recoverable error and we haven't retried yet
@@ -106,8 +105,8 @@ class MessageService {
             return result;
 
         } catch (error) {
-            console.error('Error sending button message:', error);
-            throw error;
+            console.error('❌ Error sending button message:', error.message || error);
+            return null;
         }
     }
 
@@ -135,8 +134,20 @@ class MessageService {
 
             // Helper to format media payload
             const formatMedia = (content) => {
-                if (typeof content === 'string' && (content.startsWith('http') || content.startsWith('https'))) {
-                    return { url: content };
+                if (typeof content === 'string') {
+                    const s = String(content);
+                    if (s.startsWith('http') || s.startsWith('https')) {
+                        return { url: s };
+                    }
+                    if (s.startsWith('/uploads/')) {
+                        const basePublic = path.join(__dirname, '../../../public');
+                        const rel = s.replace(/^\/+/, '');
+                        const abs = path.normalize(path.join(basePublic, rel));
+                        const baseNorm = path.normalize(basePublic);
+                        if (abs.toLowerCase().startsWith(baseNorm.toLowerCase()) && fs.existsSync(abs)) {
+                            return fs.readFileSync(abs);
+                        }
+                    }
                 }
                 return content; // Buffer or already formatted object
             };
@@ -146,6 +157,11 @@ class MessageService {
                 mediaMessage.image = formatMedia(media);
             } else if (type === 'video') {
                 mediaMessage.video = formatMedia(media);
+                mediaMessage.mimetype = 'video/mp4';
+            } else if (type === 'audio') {
+                mediaMessage.audio = formatMedia(media);
+                mediaMessage.mimetype = 'audio/mpeg';
+                mediaMessage.ptt = false;
             } else if (type === 'document') {
                 mediaMessage.document = formatMedia(media);
                 mediaMessage.mimetype = 'application/pdf';
@@ -158,8 +174,12 @@ class MessageService {
             return result;
 
         } catch (error) {
-            console.error('Error sending media:', error);
-            throw error;
+            if (error.response?.status === 404) {
+                console.error(`❌ Media not found (404): ${typeof media === 'string' ? media : 'Buffer'}`);
+            } else {
+                console.error('❌ Error sending media:', error.message || error);
+            }
+            return null;
         }
     }
 
@@ -167,6 +187,7 @@ class MessageService {
      * Add message to queue
      */
     addToQueue(sessionId, phoneNumber, message, type = 'text', options = {}) {
+        console.log(`[MessageService] Adding ${type} message to queue for ${phoneNumber} (Session: ${sessionId})`);
         this.messageQueue.push({
             sessionId,
             phoneNumber,
@@ -204,6 +225,14 @@ class MessageService {
                     item.message,
                     item.options.buttons || []
                 );
+            } else if (item.type === 'media') {
+                await this.sendMedia(
+                    item.sessionId,
+                    item.phoneNumber,
+                    item.options.mediaUrl,
+                    item.message, // caption
+                    item.options.mediaType || 'image'
+                );
             }
 
             // Rate limiting: wait 1 second between messages
@@ -219,23 +248,33 @@ class MessageService {
 
     /**
      * Format phone number to WhatsApp JID
+     * Automatically converts Egyptian local numbers to international format
      */
     formatPhoneNumber(phoneNumber) {
+        if (!phoneNumber) return '';
+        
         // If it's already a full JID (contains @), return it as is
-        if (phoneNumber.includes('@')) {
+        if (String(phoneNumber).includes('@')) {
             return phoneNumber;
         }
 
-        // Remove all non-digit characters except +
-        let cleaned = phoneNumber.replace(/[^\d+]/g, '');
+        // Remove all non-digit characters
+        let cleaned = String(phoneNumber).replace(/\D/g, '');
 
-        // Remove + if present
-        if (cleaned.startsWith('+')) {
-            cleaned = cleaned.substring(1);
+        // Convert Egyptian local numbers to international format
+        // If starts with 0 (like 01066284516), replace leading 0 with 20
+        if (cleaned.startsWith('0') && cleaned.length === 11) {
+            cleaned = '20' + cleaned.substring(1);
         }
 
-        console.log(`Formatting phone number: ${phoneNumber} -> ${cleaned}@s.whatsapp.net`);
-        return cleaned + '@s.whatsapp.net';
+        // Add 20 if it's an Egyptian number missing the country code (e.g. 1066284516)
+        if (cleaned.length === 10 && (cleaned.startsWith('10') || cleaned.startsWith('11') || cleaned.startsWith('12') || cleaned.startsWith('15'))) {
+            cleaned = '20' + cleaned;
+        }
+
+        const jid = cleaned + '@s.whatsapp.net';
+        console.log(`[MessageService] Formatted ${phoneNumber} -> ${jid}`);
+        return jid;
     }
 
     /**

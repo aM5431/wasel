@@ -11,6 +11,10 @@ class SessionManager {
     constructor() {
         this.sessions = new Map();
         this.qrCodes = new Map();
+        this.cleanupInProgress = new Set(); // Track sessions being cleaned up to avoid races
+        this.removedSessions = new Set(); // Track explicitly removed sessions to stop reconnection loops
+        this.reconnectTimers = new Map();
+        this.corruptionState = new Map();
         this.authDir = path.join(__dirname, '../../auth_sessions');
 
         // Create auth directory if it doesn't exist
@@ -22,17 +26,77 @@ class SessionManager {
     /**
      * Handle corrupted session cleanup
      */
-    async handleSessionCorruption(sessionId, onDisconnected) {
-        console.error(`🚨 Fatal cryptographic error (Bad MAC) for session ${sessionId}. Deleting session to recover.`);
+    async handleSessionCorruption(sessionId, onDisconnected, callbacks = {}) {
+        if (this.cleanupInProgress.has(sessionId)) return;
+        this.cleanupInProgress.add(sessionId);
+
+        const now = Date.now();
+        const prev = this.corruptionState.get(sessionId) || { count: 0, firstAt: now, lastAt: 0 };
+        const windowMs = 15 * 60 * 1000;
+        const state = (now - prev.firstAt > windowMs)
+            ? { count: 0, firstAt: now, lastAt: 0 }
+            : prev;
+        state.count += 1;
+        state.lastAt = now;
+        this.corruptionState.set(sessionId, state);
+
+        console.error(`🚨 Fatal cryptographic error (Bad MAC/Decryption Failure) for session ${sessionId}. Safe restart attempt ${state.count}/3.`);
         networkOptimizer.recordEvent(sessionId, 'fatal_error');
 
-        // Use standard removal process to ensure socket closure and file release
-        await this.removeSession(sessionId);
+        try {
+            await this.softResetSession(sessionId);
 
-        // Notify disconnection with specific reason
-        if (onDisconnected) {
-            onDisconnected({ error: new Error('Session corrupted (Bad MAC). Please scan QR again.') });
+            if (state.count >= 3) {
+                const sessionPath = path.join(this.authDir, sessionId);
+                const quarantineRoot = path.join(this.authDir, '_quarantine');
+                const quarantinePath = path.join(quarantineRoot, `${sessionId}_${now}`);
+                try {
+                    if (!fs.existsSync(quarantineRoot)) fs.mkdirSync(quarantineRoot, { recursive: true });
+                    if (fs.existsSync(sessionPath)) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        fs.renameSync(sessionPath, quarantinePath);
+                    }
+                } catch (e) { }
+            }
+
+            if (state.count < 3) {
+                const retryCount = (callbacks.retryCount || 0) + 1;
+                const delay = Math.min(5000 * retryCount, 30000);
+                const t = setTimeout(() => {
+                    this.createSession(sessionId, {
+                        ...callbacks,
+                        isNew: false,
+                        retryCount
+                    }).catch(() => { });
+                }, delay);
+                this.reconnectTimers.set(sessionId, t);
+            }
+
+            if (onDisconnected) {
+                onDisconnected({ error: new Error(state.count >= 3 ? 'Session needs re-link. Please scan QR again.' : 'Session recovering from encryption desync...') });
+            }
+        } finally {
+            // Give some time before allowing another cleanup of the same ID
+            setTimeout(() => this.cleanupInProgress.delete(sessionId), 5000);
         }
+    }
+
+    async softResetSession(sessionId) {
+        try {
+            if (this.reconnectTimers.has(sessionId)) {
+                clearTimeout(this.reconnectTimers.get(sessionId));
+                this.reconnectTimers.delete(sessionId);
+            }
+            if (this.sessions.has(sessionId)) {
+                const sock = this.sessions.get(sessionId);
+                try { sock.end(undefined); } catch (e) { }
+                this.sessions.delete(sessionId);
+            }
+            if (this.qrCodes.has(sessionId)) {
+                this.qrCodes.delete(sessionId);
+            }
+            networkOptimizer.cleanup(sessionId);
+        } catch (e) { }
     }
 
     /**
@@ -45,6 +109,11 @@ class SessionManager {
     async createSession(sessionId, callbacks = {}) {
         try {
             const { onQR, onConnected, onDisconnected, onMessage } = callbacks;
+
+            // Clear from removedSessions when starting a new connection attempt
+            if (!callbacks.retryCount) {
+                this.removedSessions.delete(sessionId);
+            }
 
             // Check if session already exists and is connected
             if (this.sessions.has(sessionId) && this.isConnected(sessionId)) {
@@ -72,16 +141,37 @@ class SessionManager {
                 const authResult = await useMultiFileAuthState(sessionPath);
                 state = authResult.state;
                 saveCreds = authResult.saveCreds;
-                console.log(`[SessionManager] Step 1: Auth state loaded`);
-            } catch (authError) {
-                console.log(`Auth state corrupted for ${sessionId}, cleaning up...`);
-                if (fs.existsSync(sessionPath)) {
-                    fs.rmSync(sessionPath, { recursive: true, force: true });
-                    fs.mkdirSync(sessionPath, { recursive: true });
+                
+                // Check if we have valid credentials
+                if (state && state.creds && state.creds.me) {
+                    console.log(`[SessionManager] Valid credentials found for ${sessionId} (${state.creds.me.name || 'Unknown'})`);
+                } else if (state && state.creds && state.creds.signedIdentityKey) {
+                    console.log(`[SessionManager] Found signedIdentityKey for ${sessionId}, but 'me' is missing. Trying to connect...`);
+                } else {
+                    console.log(`[SessionManager] No active credentials for ${sessionId}, will require QR`);
+                    // If this is a restore operation (not new), this is unexpected.
+                    if (!callbacks.isNew) {
+                        console.warn(`[SessionManager] ⚠️ Warning: Session ${sessionId} is missing credentials during restore.`);
+                    }
                 }
-                const authResult = await useMultiFileAuthState(sessionPath);
-                state = authResult.state;
-                saveCreds = authResult.saveCreds;
+            } catch (authError) {
+                console.error(`[SessionManager] ❌ Auth state error for ${sessionId}:`, authError.message);
+                
+                if (callbacks.isNew) {
+                    console.log(`Cleaning up corrupted session ${sessionId} for new connection...`);
+                    if (fs.existsSync(sessionPath)) {
+                        fs.rmSync(sessionPath, { recursive: true, force: true });
+                        fs.mkdirSync(sessionPath, { recursive: true });
+                    }
+                    // Retry for new session
+                    const authResult = await useMultiFileAuthState(sessionPath);
+                    state = authResult.state;
+                    saveCreds = authResult.saveCreds;
+                } else {
+                    // For existing sessions, re-throw or handle gracefully
+                    // Don't delete immediately, let the user decide or try to recover
+                    throw new Error(`Failed to load auth state for ${sessionId}: ${authError.message}`);
+                }
             }
 
             // Get latest Baileys version with enhanced caching
@@ -112,10 +202,15 @@ class SessionManager {
             }, {
                 write: (msg) => {
                     const msgStr = msg.toString();
-                    if (msgStr.includes('Bad MAC') || msgStr.includes('Session error')) {
-                        console.error(`🚨 DETECTED BAD MAC IN LOGS for ${sessionId} - Triggering Cleanup`);
-                        this.handleSessionCorruption(sessionId, onDisconnected);
-                    }
+                    const isNoisyDecrypt =
+                        msgStr.includes('failed to decrypt message') ||
+                        msgStr.includes('No matching sessions found') ||
+                        msgStr.includes('Failed to decrypt message with any known session') ||
+                        msgStr.includes('Session error:Error: Bad MAC') ||
+                        msgStr.includes('Closing open session in favor of incoming prekey bundle') ||
+                        msgStr.includes('Closing session:');
+                    if (isNoisyDecrypt) return;
+
                     // Only print errors or fatal logs to terminal to avoid noise, unless it's the specific error we are looking for
                     const levelMatch = msgStr.match(/"level":(\d+)/);
                     if (levelMatch && parseInt(levelMatch[1]) >= 50) { // 50 is ERROR, 60 is FATAL
@@ -130,20 +225,23 @@ class SessionManager {
                 auth: state,
                 printQRInTerminal: false,
                 logger: logger,
-                browser: ['Ubuntu', 'Chrome', '22.04.2'],
+                browser: ['Wasel', 'Chrome', '1.0.0'],
                 syncFullHistory: false,
-                markOnlineOnConnect: false, // Enhanced privacy
+                markOnlineOnConnect: true, // Ensure online status for visibility
                 generateHighQualityLinkPreview: false, // Security improvement
                 qrTimeout: 60000, // 1 minute QR timeout
                 connectTimeoutMs: 60000, // 1 minute connection timeout
                 defaultQueryTimeoutMs: 60000,
-                keepAliveIntervalMs: 25000, // 25 seconds keep alive
-                retryRequestDelayMs: 1000,
-                maxMsgRetryCount: 3,
+                keepAliveIntervalMs: 30000, // 30 seconds keep alive
+                retryRequestDelayMs: 2000,
+                maxMsgRetryCount: 5,
                 getMessage: async (key) => {
                     return { conversation: '' };
                 }
             });
+
+            // Store session immediately so isConnected/getSession can find it during initialization
+            this.sessions.set(sessionId, sock);
 
             // Handle connection updates
             sock.ev.on('connection.update', async (update) => {
@@ -177,41 +275,69 @@ class SessionManager {
                 if (connection === 'close') {
                     networkOptimizer.recordEvent(sessionId, 'failure');
 
-                    const shouldReconnect = (lastDisconnect?.error instanceof Boom)
-                        ? lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut
-                        : true;
+                    const statusCode = (lastDisconnect?.error instanceof Boom)
+                        ? lastDisconnect.error.output.statusCode
+                        : null;
+                    const isLoggedOut = statusCode === DisconnectReason.loggedOut;
+                    const shouldReconnect = !isLoggedOut;
 
                     // Enhanced retry logic with exponential backoff
                     const isBadMac = lastDisconnect.error?.message?.includes('Bad MAC') ||
                         lastDisconnect.error?.toString().includes('Bad MAC');
 
                     if (isBadMac) {
-                        await this.handleSessionCorruption(sessionId, onDisconnected);
+                        await this.handleSessionCorruption(sessionId, onDisconnected, callbacks);
                         return; // Stop reconnection loop
                     }
 
                     console.log(`Connection closed for ${sessionId}. Reconnect:`, shouldReconnect);
 
-                    if (shouldReconnect && networkOptimizer.shouldAttemptConnection(sessionId)) {
+                    if (this.reconnectTimers.has(sessionId)) {
+                        clearTimeout(this.reconnectTimers.get(sessionId));
+                        this.reconnectTimers.delete(sessionId);
+                    }
+
+                    if (this.removedSessions.has(sessionId)) {
+                        if (onDisconnected) {
+                            onDisconnected(lastDisconnect);
+                        }
+                        return;
+                    }
+
+                    if (isLoggedOut) {
+                        console.log(`Session ${sessionId} logged out, cleaning up...`);
+                        setTimeout(() => this.removeSession(sessionId), 3000);
+                        if (onDisconnected) {
+                            onDisconnected(lastDisconnect);
+                        }
+                        return;
+                    }
+
+                    if (shouldReconnect) {
                         const retryCount = (callbacks.retryCount || 0) + 1;
+                        
+                        // For new sessions (QR scan), limit retries. For restored sessions, retry indefinitely (max 10000)
+                        const maxRetries = callbacks.isNew ? 5 : 10000;
 
-                        if (retryCount <= 2) { // Reduced max attempts
+                        if (retryCount <= maxRetries) {
                             networkOptimizer.recordEvent(sessionId, 'reconnect');
-                            const retryDelay = Math.min(3000 * Math.pow(2, retryCount - 1), 10000); // Exponential backoff
+                            const maxDelay = callbacks.isNew ? 30000 : 120000;
+                            const baseDelay = Math.min(5000 * Math.pow(2, retryCount - 1), maxDelay);
+                            const retryDelay = networkOptimizer.shouldAttemptConnection(sessionId)
+                                ? baseDelay
+                                : Math.max(60000, baseDelay);
 
-                            console.log(`Attempting reconnection ${retryCount}/2 in ${retryDelay}ms`);
-                            setTimeout(() => {
+                            console.log(`[SessionManager] Attempting reconnection ${retryCount}/${maxRetries} for ${sessionId} in ${retryDelay}ms`);
+                            const t = setTimeout(() => {
                                 this.createSession(sessionId, {
                                     ...callbacks,
                                     retryCount
                                 });
                             }, retryDelay);
+                            this.reconnectTimers.set(sessionId, t);
                         } else {
                             console.log(`Max reconnection attempts reached for ${sessionId}`);
                         }
-                    } else {
-                        console.log(`Session ${sessionId} logged out, cleaning up...`);
-                        setTimeout(() => this.removeSession(sessionId), 3000);
                     }
 
                     if (onDisconnected) {
@@ -259,9 +385,6 @@ class SessionManager {
                 });
             }
 
-            // Store session
-            this.sessions.set(sessionId, sock);
-
             return sock;
 
         } catch (error) {
@@ -289,7 +412,7 @@ class SessionManager {
      */
     isConnected(sessionId) {
         const session = this.sessions.get(sessionId);
-        return session && session.user;
+        return !!(session && session.user);
     }
 
     /**
@@ -314,6 +437,12 @@ class SessionManager {
      */
     async removeSession(sessionId) {
         try {
+            this.removedSessions.add(sessionId);
+            if (this.reconnectTimers.has(sessionId)) {
+                clearTimeout(this.reconnectTimers.get(sessionId));
+                this.reconnectTimers.delete(sessionId);
+            }
+
             if (this.sessions.has(sessionId)) {
                 const sock = this.sessions.get(sessionId);
                 sock.end(undefined); // Close connection
@@ -360,11 +489,119 @@ class SessionManager {
      * Disconnect session without removing
      */
     async disconnectSession(sessionId) {
+        this.removedSessions.add(sessionId);
+        if (this.reconnectTimers.has(sessionId)) {
+            clearTimeout(this.reconnectTimers.get(sessionId));
+            this.reconnectTimers.delete(sessionId);
+        }
         const session = this.sessions.get(sessionId);
         if (session) {
             await session.end();
             this.sessions.delete(sessionId);
             console.log(`Session ${sessionId} disconnected`);
+        }
+    }
+
+    /**
+     * Start periodic health check for sessions
+     */
+    startHealthCheck() {
+        if (this.healthCheckInterval) return;
+
+        console.log('[SessionManager] Starting session health check (every 5 minutes)...');
+        // Run every 5 minutes
+        this.healthCheckInterval = setInterval(async () => {
+            try {
+                const { db } = require('../../database/db');
+                const sessions = await db.all('SELECT session_id, connected FROM whatsapp_sessions');
+                
+                for (const session of sessions) {
+                    // If session should be connected but isn't in memory or has no user
+                    if (!this.isConnected(session.session_id) && !this.removedSessions.has(session.session_id)) {
+                        console.log(`[SessionManager-Health] Session ${session.session_id} found disconnected. Attempting revival...`);
+                        
+                        // Check if files exist
+                        const sessionPath = path.join(this.authDir, session.session_id);
+                        if (fs.existsSync(sessionPath) && fs.existsSync(path.join(sessionPath, 'creds.json'))) {
+                            this.createSession(session.session_id, { 
+                                isNew: false,
+                                onConnected: async () => {
+                                    console.log(`✅ [SessionManager-Health] Session ${session.session_id} revived`);
+                                    await db.run('UPDATE whatsapp_sessions SET connected = 1, last_connected = ? WHERE session_id = ?', 
+                                        [new Date().toISOString(), session.session_id]);
+                                }
+                            }).catch(err => console.error(`[SessionManager-Health] Failed to revive ${session.session_id}:`, err.message));
+                        } else {
+                            console.log(`[SessionManager-Health] Session ${session.session_id} files missing. Marking as disconnected.`);
+                            await db.run('UPDATE whatsapp_sessions SET connected = 0 WHERE session_id = ?', [session.session_id]);
+                            await db.run('UPDATE islamic_reminders_config SET session_id = NULL WHERE session_id = ?', [session.session_id]);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('[SessionManager-Health] Error:', error);
+            }
+        }, 5 * 60 * 1000); // 5 minutes
+    }
+
+    /**
+     * Restore all sessions from database
+     */
+    async restoreAllSessions() {
+        try {
+            const { db } = require('../../database/db');
+            console.log('🔄 [SessionManager] Deep-restoring WhatsApp sessions from database...');
+            
+            const sessions = await db.all('SELECT * FROM whatsapp_sessions');
+            console.log(`[SessionManager] Found ${sessions.length} sessions in DB to evaluate`);
+            if (sessions.length) {
+                await db.run('UPDATE whatsapp_sessions SET connected = 0');
+            }
+
+            for (const session of sessions) {
+                const sessionPath = path.join(this.authDir, session.session_id);
+                const hasFolder = fs.existsSync(sessionPath);
+                const hasCreds = hasFolder && fs.existsSync(path.join(sessionPath, 'creds.json'));
+
+                console.log(`[SessionManager] Evaluating ${session.session_id}: Folder=${hasFolder}, Creds=${hasCreds}`);
+                
+                if (!hasCreds) {
+                    console.log(`[SessionManager] Skipping ${session.session_id} - No active credentials found on disk`);
+                    try {
+                        await db.run('UPDATE whatsapp_sessions SET connected = 0 WHERE session_id = ?', [session.session_id]);
+                        await db.run('UPDATE islamic_reminders_config SET session_id = NULL WHERE session_id = ?', [session.session_id]);
+                    } catch (e) { }
+                    continue;
+                }
+
+                console.log(`[SessionManager] Reconnecting: ${session.name || session.session_id}`);
+                
+                // Fire and forget - each session handles its own connection/retry logic
+                this.createSession(session.session_id, {
+                    isNew: false,
+                    onConnected: async (info) => {
+                        console.log(`✅ [SessionManager] Session ${session.session_id} reconnected`);
+                        await db.run('UPDATE whatsapp_sessions SET connected = 1, last_connected = ? WHERE session_id = ?', 
+                            [new Date().toISOString(), session.session_id]);
+                    },
+                    onDisconnected: async (reason) => {
+                        console.log(`⚠️ [SessionManager] Session ${session.session_id} offline`);
+                        await db.run('UPDATE whatsapp_sessions SET connected = 0 WHERE session_id = ?', [session.session_id]);
+                        // Note: Connection retry logic is inside createSession
+                    }
+                }).catch(err => {
+                    console.error(`[SessionManager] Error starting ${session.session_id}:`, err.message);
+                });
+
+                // Small delay to avoid hammering the system
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            // Start the health check monitor
+            this.startHealthCheck();
+
+        } catch (error) {
+            console.error('[SessionManager] Error during restoreAllSessions:', error);
         }
     }
 }

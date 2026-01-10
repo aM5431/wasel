@@ -8,48 +8,72 @@ class PrayerTimesService {
      * Get cached prayer times or calculate fresh
      */
     static async getPrayerTimes(config) {
-        // Check if manual mode is enabled
-        if (config.prayer_time_mode === 'manual') {
-            // Return manual prayer times
-            const date = new Date().toISOString().split('T')[0];
-            const hijriDate = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
+        let times = null;
+        const date = new Date().toISOString().split('T')[0];
+        let hijriDate = '';
+        try {
+            hijriDate = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
                 day: 'numeric', month: 'long', year: 'numeric'
             }).format(new Date());
-
-            return {
-                id: 'manual',
-                location_key: 'manual',
-                prayer_date: date,
-                fajr: config.manual_fajr || '05:00',
-                sunrise: '06:30', // Not used in manual mode but kept for compatibility
-                dhuhr: config.manual_dhuhr || '12:00',
-                asr: config.manual_asr || '15:30',
-                maghrib: config.manual_maghrib || '18:00',
-                isha: config.manual_isha || '19:30',
-                hijri_date: hijriDate,
-                cached_at: new Date().toISOString(),
-                is_manual: true
-            };
+        } catch (e) {
+            console.error('Intl Hijri Error:', e.message);
+            hijriDate = new Date().toLocaleDateString('ar-SA');
         }
 
-        // Auto mode: use location-based calculation
-        if (!config.latitude || !config.longitude) return null;
+        // Default base times
+        times = {
+            fajr: '05:00',
+            sunrise: '06:30',
+            dhuhr: '12:00',
+            asr: '15:30',
+            maghrib: '18:00',
+            isha: '19:30',
+            hijri_date: hijriDate,
+            prayer_date: date,
+            is_manual: true
+        };
 
-        const date = new Date().toISOString().split('T')[0];
-        const locationKey = `${config.latitude}_${config.longitude}_${config.prayer_calculation_method || 'Egypt'}`;
-
-        // Check cache
-        const cached = await db.get(
-            'SELECT * FROM prayer_times_cache WHERE location_key = ? AND prayer_date = ?',
-            [locationKey, date]
-        );
-
-        if (cached) {
-            return cached;
+        if (!config.latitude && !config.longitude) {
+            return times;
         }
 
-        // Calculate and cache
-        return await this.calculateAndCachePrayerTimes(config, date, locationKey);
+        // Try to get automatic times if location is available
+        if (config.latitude && config.longitude) {
+            const locationKey = `${config.latitude}_${config.longitude}_${config.prayer_calculation_method || 'Egypt'}`;
+            
+            // Check cache
+            let cached = await db.get(
+                'SELECT * FROM prayer_times_cache WHERE location_key = ? AND prayer_date = ?',
+                [locationKey, date]
+            );
+
+            if (!cached) {
+                cached = await this.calculateAndCachePrayerTimes(config, date, locationKey);
+            }
+
+            if (cached) {
+                times = { ...cached, is_manual: false };
+            }
+        }
+
+        // If explicitly set to manual mode, apply manual overrides
+        if (config.prayer_time_mode === 'manual') {
+            console.log(`[PrayerTimesService-Debug] Applying manual overrides for config ${config.id}:`, {
+                fajr: config.manual_fajr,
+                dhuhr: config.manual_dhuhr,
+                asr: config.manual_asr,
+                maghrib: config.manual_maghrib,
+                isha: config.manual_isha
+            });
+            if (config.manual_fajr) times.fajr = config.manual_fajr;
+            if (config.manual_dhuhr) times.dhuhr = config.manual_dhuhr;
+            if (config.manual_asr) times.asr = config.manual_asr;
+            if (config.manual_maghrib) times.maghrib = config.manual_maghrib;
+            if (config.manual_isha) times.isha = config.manual_isha;
+            times.is_manual = true;
+        }
+
+        return times;
     }
 
     /**
@@ -73,9 +97,14 @@ class PrayerTimesService {
             const formatter = (time) => moment(time).tz(timezone).format('HH:mm');
 
             // Get Hijri Date
-            const hijriDate = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
-                day: 'numeric', month: 'long', year: 'numeric'
-            }).format(dateObj);
+            let hijriDate = '';
+            try {
+                hijriDate = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                }).format(dateObj);
+            } catch (e) {
+                hijriDate = dateObj.toLocaleDateString('ar-SA');
+            }
 
             const prayerData = {
                 id: uuidv4(),

@@ -214,9 +214,12 @@
             padding: 2rem;
             border-radius: var(--radius-lg);
             max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
+            width: 95%;
+            max-height: 90vh;
             overflow-y: auto;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
         }
 
         .qr-popup {
@@ -225,11 +228,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             z-index: 2000;
             display: none;
             align-items: center;
             justify-content: center;
+            animation: fadeIn 0.3s ease;
         }
 
         .qr-popup.active {
@@ -237,23 +243,39 @@
         }
 
         .qr-content {
-            background: var(--bg-card);
-            padding: 30px;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 30px;
             width: 90%;
-            max-width: 400px;
+            max-width: 450px;
             text-align: center;
             position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            color: white;
+        }
+
+        [data-theme="light"] .qr-content {
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-main);
+            border: 1px solid var(--border);
         }
 
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
+            border: 4px solid rgba(255, 255, 255, 0.1);
             border-left-color: var(--primary);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            margin: 30px auto;
+        }
+
+        [data-theme="light"] .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.05);
+            border-left-color: var(--primary);
         }
 
         @keyframes spin {
@@ -526,12 +548,15 @@
                 <div class="admin-nav-item" onclick="switchTab('whatsapp')">
                     <i class="fab fa-whatsapp"></i> <span class="nav-text">جلسات واتساب</span>
                 </div>
-                <a href="/dashboard/islamic-reminders" class="admin-nav-item">
-                    <i class="fas fa-mosque"></i> <span class="nav-text">التذكيرات الإسلامية</span>
-                </a>
-                <a href="/logout" class="admin-nav-item" style="margin-top: 2rem; color: #f44336;">
-                    <i class="fas fa-sign-out-alt"></i> <span class="nav-text">تسجيل خروج</span>
-                </a>
+                <% if (userFeatures.prayer_times || userFeatures.adhkar || userFeatures.hadith || userFeatures.quran ||
+                    userFeatures.fasting) { %>
+                    <a href="/dashboard/islamic-reminders" class="admin-nav-item">
+                        <i class="fas fa-mosque"></i> <span class="nav-text">التذكيرات الإسلامية</span>
+                    </a>
+                    <% } %>
+                        <a href="/logout" class="admin-nav-item" style="margin-top: 2rem; color: #f44336;">
+                            <i class="fas fa-sign-out-alt"></i> <span class="nav-text">تسجيل خروج</span>
+                        </a>
             </nav>
         </aside>
 
@@ -726,7 +751,8 @@
             <div id="whatsapp-tab" class="tab-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2>جلسات واتساب</h2>
-                    <button class="btn" onclick="openAddSessionModal()">
+                    <button id="add-session-btn-main" class="btn" onclick="openAddSessionModal()"
+                        data-max-sessions="<%= maxSessions %>">
                         <i class="fas fa-plus"></i> إضافة جلسة
                     </button>
                 </div>
@@ -754,39 +780,78 @@
 
     <!-- Add Session Modal -->
     <div id="add-session-modal" class="modal">
-        <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                <h3><i class="fab fa-whatsapp"></i> ربط حساب واتساب</h3>
+        <div class="modal-content" style="max-width: 500px; border-radius: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 12px; font-size: 1.4rem;">
+                    <div
+                        style="width: 40px; height: 40px; background: var(--primary-light); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    ربط حساب واتساب
+                </h3>
                 <button onclick="closeModal('add-session-modal')"
-                    style="background:none;border:none;cursor:pointer;font-size:1.2rem;"><i
-                        class="fas fa-times"></i></button>
+                    style="background: var(--bg-secondary); border: none; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: 0.2s;">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
+
             <form id="add-session-form">
-                <div style="margin-bottom: 15px;">
-                    <label style="display:block;margin-bottom:5px;">اسم الجلسة *</label>
-                    <input type="text" id="session-name" class="form-control" placeholder="مثال: رقمي الشخصي" required>
+                <div style="margin-bottom: 20px;">
+                    <label style="display:block; margin-bottom:8px; font-weight: 600; color: var(--text-main);">
+                        <i class="fas fa-tag" style="margin-left: 5px; color: var(--primary); opacity: 0.7;"></i>
+                        اسم الجلسة <span style="color: var(--danger);">*</span>
+                    </label>
+                    <input type="text" id="session-name" class="form-control"
+                        placeholder="مثال: رقمي الشخصي، واتساب المتجر" required
+                        style="padding: 12px 15px; border-radius: 12px; font-size: 0.95rem;">
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display:block;margin-bottom:5px;">الدولة</label>
+
+                <div style="margin-bottom: 20px; position: relative;">
+                    <label style="display:block; margin-bottom:8px; font-weight: 600; color: var(--text-main);">
+                        <i class="fas fa-globe" style="margin-left: 5px; color: var(--primary); opacity: 0.7;"></i>
+                        الدولة ورمز الهاتف <span style="color: var(--danger);">*</span>
+                    </label>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <span id="selected-flag" style="font-size: 1.5rem;">🇪🇬</span>
-                        <input type="text" id="country-search" class="form-control" placeholder="ابحث عن الدولة..."
-                            onclick="showCountryList()" oninput="searchCountries()" style="flex: 1;">
-                        <input type="hidden" id="country-code" value="+20">
-                    </div>
-                    <div id="country-dropdown"
-                        style="display:none;position:absolute;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto;z-index:100;width:calc(100% - 50px);">
+                        <div style="position: relative; flex: 1;">
+                            <div
+                                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); z-index: 5;">
+                                <span id="selected-flag" style="font-size: 1.3rem;">🇪🇬</span>
+                            </div>
+                            <input type="text" id="country-search" class="form-control" placeholder="ابحث عن الدولة..."
+                                onclick="showCountryList()" oninput="searchCountries()"
+                                style="padding: 12px 45px 12px 15px; border-radius: 12px; font-size: 0.95rem; background: var(--bg-secondary); border-color: transparent;">
+                            <input type="hidden" id="country-code" value="+20">
+
+                            <div id="country-dropdown"
+                                style="display:none; position:absolute; top: 100%; left:0; right:0; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; max-height:250px; overflow-y:auto; z-index:1000; box-shadow: var(--shadow-xl); margin-top: 8px;">
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display:block;margin-bottom:5px;">رقم الهاتف *</label>
-                    <input type="tel" id="session-phone" class="form-control" placeholder="1234567890" required
-                        style="direction:ltr;text-align:left;">
+
+                <div style="margin-bottom: 25px;">
+                    <label style="display:block; margin-bottom:8px; font-weight: 600; color: var(--text-main);">
+                        <i class="fas fa-phone" style="margin-left: 5px; color: var(--primary); opacity: 0.7;"></i>
+                        رقم الهاتف <span style="color: var(--danger);">*</span>
+                    </label>
+                    <div style="display: flex; align-items: center; background: var(--bg-secondary); border-radius: 12px; padding: 0 15px; border: 1px solid transparent; transition: 0.2s;"
+                        id="phone-container">
+                        <span id="display-prefix"
+                            style="color: var(--text-muted); font-weight: 600; margin-left: 10px; border-left: 1px solid var(--border); padding-left: 10px; direction: ltr;">+20</span>
+                        <input type="tel" id="session-phone" class="form-control" placeholder="123456789" required
+                            style="background: transparent; border: none; box-shadow: none; padding: 12px 0; font-size: 1.1rem; letter-spacing: 1px; flex: 1; direction: ltr; text-align: left;">
+                    </div>
+                    <small style="color: var(--text-muted); display: block; margin-top: 8px; font-size: 0.85rem;">
+                        <i class="fas fa-info-circle"></i> أدخل الرقم بدون رمز الدولة (مثال: 1023456789)
+                    </small>
                 </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-outline"
-                        onclick="closeModal('add-session-modal')">إلغاء</button>
-                    <button type="submit" class="btn">إنشاء وربط</button>
+
+                <div style="display: flex; gap: 12px; margin-top: 30px;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('add-session-modal')"
+                        style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 600;">إلغاء</button>
+                    <button type="submit" class="btn"
+                        style="flex: 2; padding: 12px; border-radius: 12px; font-weight: 600; box-shadow: 0 4px 15px var(--primary-light);">إنشاء
+                        وربط</button>
                 </div>
             </form>
         </div>
@@ -794,32 +859,67 @@
 
     <!-- QR Popup -->
     <div id="qr-popup" class="qr-popup">
-        <div class="qr-content">
+        <div class="qr-content" style="border-radius: 32px; overflow: hidden;">
             <button onclick="closeQRPopup()"
-                style="position:absolute;top:15px;right:15px;background:none;border:none;cursor:pointer;font-size:1.2rem;"><i
-                    class="fas fa-times"></i></button>
+                style="position:absolute; top:20px; right:20px; background: rgba(255,255,255,0.1); border:none; cursor:pointer; width: 36px; height: 36px; border-radius: 50%; color: inherit; display: flex; align-items: center; justify-content: center; z-index: 10; transition: 0.2s;">
+                <i class="fas fa-times"></i>
+            </button>
 
-            <div id="status-waiting">
+            <div id="status-waiting" style="padding: 20px 0;">
                 <div class="spinner"></div>
-                <p>جاري تجهيز رمز QR...</p>
+                <h3 style="margin-top: 20px; font-weight: 600;">جاري تجهيز الاتصال</h3>
+                <p style="opacity: 0.7; font-size: 0.95rem;">برجاء الانتظار قليلاً لتوليد رمز الاستجابة السريعة...</p>
             </div>
 
-            <div id="status-connecting" style="display:none;">
-                <h3 id="display-device" style="margin-bottom:5px;">Android</h3>
-                <small id="display-session-name" style="color:var(--text-muted);">Session</small>
-                <img id="qr-popup-image" src=""
-                    style="width:250px;height:250px;margin:15px 0;border:5px solid white;border-radius:10px;">
-                <p style="color:var(--text-muted);font-size:0.9rem;">افتح واتساب > الأجهزة المرتبطة > ربط جهاز</p>
+            <div id="status-connecting" style="display:none; padding: 10px 0;">
+                <div style="margin-bottom: 25px;">
+                    <h3 id="display-device" style="margin: 0 0 5px 0; font-size: 1.5rem; font-weight: 700;">Android</h3>
+                    <div
+                        style="display: inline-flex; align-items: center; gap: 6px; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                        <i class="fas fa-link"></i> <span id="display-session-name">Session</span>
+                    </div>
+                </div>
+
+                <div
+                    style="position: relative; padding: 15px; background: white; border-radius: 24px; display: inline-block; box-shadow: 0 10px 25px rgba(0,0,0,0.2); margin-bottom: 25px;">
+                    <img id="qr-popup-image" src="" style="width:230px; height:230px; display: block;">
+                </div>
+
+                <div
+                    style="background: rgba(var(--primary-rgb), 0.1); padding: 15px; border-radius: 16px; margin-bottom: 20px;">
+                    <p style="margin: 0; font-weight: 600; font-size: 0.95rem; margin-bottom: 8px;">خطوات الربط:</p>
+                    <ul
+                        style="list-style: none; padding: 0; margin: 0; font-size: 0.85rem; opacity: 0.9; text-align: right; display: inline-block;">
+                        <li style="margin-bottom: 5px;"><i class="fas fa-circle"
+                                style="font-size: 0.4rem; vertical-align: middle; margin-left: 8px;"></i>افتح واتساب على
+                            هاتفك</li>
+                        <li style="margin-bottom: 5px;"><i class="fas fa-circle"
+                                style="font-size: 0.4rem; vertical-align: middle; margin-left: 8px;"></i>اضغط على
+                            الإعدادات أو الثلاث نقاط</li>
+                        <li><i class="fas fa-circle"
+                                style="font-size: 0.4rem; vertical-align: middle; margin-left: 8px;"></i>اختر "الأجهزة
+                            المرتبطة" ثم "ربط جهاز"</li>
+                    </ul>
+                </div>
             </div>
 
-            <div id="status-connected" style="display:none;">
-                <i class="fas fa-check-circle" style="font-size:4rem;color:var(--primary);margin-bottom:20px;"></i>
-                <h3>تم الاتصال بنجاح!</h3>
+            <div id="status-connected" style="display:none; padding: 40px 0;">
+                <div
+                    style="width: 100px; height: 100px; background: #25D366; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; box-shadow: 0 0 30px rgba(37, 211, 102, 0.4);">
+                    <i class="fas fa-check" style="font-size: 3.5rem;"></i>
+                </div>
+                <h2 style="margin: 0 0 10px 0; font-weight: 800;">تم الاتصال بنجاح!</h2>
+                <p style="opacity: 0.8;">يمكنك الآن البدء في استخدام مميزات الواتساب</p>
             </div>
 
-            <div id="status-error" style="display:none;">
-                <i class="fas fa-exclamation-circle" style="font-size:3rem;color:#f44336;margin-bottom:15px;"></i>
-                <h4 id="error-message">حدث خطأ</h4>
+            <div id="status-error" style="display:none; padding: 40px 0;">
+                <div
+                    style="width: 80px; height: 80px; background: #f44336; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <i class="fas fa-exclamation" style="font-size: 2.5rem;"></i>
+                </div>
+                <h3 id="error-message" style="margin: 0 0 15px 0;">حدث خطأ في الاتصال</h3>
+                <button onclick="closeQRPopup()" class="btn"
+                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">إغلاق</button>
             </div>
         </div>
     </div>
@@ -839,13 +939,19 @@
             { code: '+961', name: 'لبنان', flag: '🇱🇧' },
             { code: '+963', name: 'سوريا', flag: '🇸🇾' },
             { code: '+964', name: 'العراق', flag: '🇮🇶' },
-            { code: '+212', name: 'المغرب', flag: '🇲🇦' },
+            { code: '+967', name: 'اليمن', flag: '🇾🇪' },
+            { code: '+218', name: 'ليبيا', flag: '🇱🇾' },
             { code: '+213', name: 'الجزائر', flag: '🇩🇿' },
+            { code: '+212', name: 'المغرب', flag: '🇲🇦' },
             { code: '+216', name: 'تونس', flag: '🇹🇳' },
             { code: '+249', name: 'السودان', flag: '🇸🇩' },
             { code: '+90', name: 'تركيا', flag: '🇹🇷' },
             { code: '+1', name: 'أمريكا', flag: '🇺🇸' },
-            { code: '+44', name: 'بريطانيا', flag: '🇬🇧' }
+            { code: '+44', name: 'بريطانيا', flag: '🇬🇧' },
+            { code: '+49', name: 'ألمانيا', flag: '🇩🇪' },
+            { code: '+33', name: 'فرنسا', flag: '🇫🇷' },
+            { code: '+34', name: 'إسبانيا', flag: '🇪🇸' },
+            { code: '+39', name: 'إيطاليا', flag: '🇮🇹' }
         ];
 
         function toggleSidebar() {
@@ -880,6 +986,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadSessions();
             setInterval(loadSessions, 10000);
+
+            // Handle hash-based or query-based tab switching
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            
+            if (window.location.hash === '#whatsapp' || tabParam === 'whatsapp') {
+                switchTab('whatsapp');
+            } else if (window.location.hash === '#overview' || tabParam === 'dashboard' || tabParam === 'overview') {
+                switchTab('overview');
+            }
 
             const saved = localStorage.getItem('theme');
             if (saved) {
@@ -938,31 +1054,65 @@
                 const countEl = document.getElementById('sessions-count');
                 if (countEl) countEl.textContent = connectedCount;
 
+                // Enforce max sessions limit on Add Button
+                const addBtn = document.getElementById('add-session-btn-main');
+                if (addBtn) {
+                    const maxAllowed = parseInt(addBtn.getAttribute('data-max-sessions') || '1');
+                    if (sessions.length >= maxAllowed) {
+                        addBtn.disabled = true;
+                        addBtn.classList.add('disabled-btn');
+                        addBtn.innerHTML = '<i class="fas fa-lock"></i> تم الوصول للحد (' + maxAllowed + ')';
+                        addBtn.title = 'لقد وصلت للحد الأقصى المسموح به في باقتك الحالية';
+                        addBtn.style.opacity = '0.6';
+                        addBtn.style.cursor = 'not-allowed';
+                    } else {
+                        addBtn.disabled = false;
+                        addBtn.classList.remove('disabled-btn');
+                        addBtn.innerHTML = '<i class="fas fa-plus"></i> إضافة جلسة';
+                        addBtn.style.opacity = '1';
+                        addBtn.style.cursor = 'pointer';
+                    }
+                }
+
                 if (sessions.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">لا توجد جلسات</td></tr>';
                     return;
                 }
 
-                tbody.innerHTML = sessions.map(s => `
-                    <tr>
-                        <td>
-                            <div style="font-weight:600;">${s.name}</div>
-                            <small style="color:var(--text-muted);font-family:monospace;">${s.session_id.substring(0, 12)}...</small>
-                        </td>
-                        <td>${s.device_type || 'Android'}</td>
-                        <td style="direction:ltr;text-align:right;">${s.phoneNumber ? '+' + s.phoneNumber : (s.phone_number || '-')}</td>
-                        <td><span class="status-badge ${s.connected ? 'status-active' : 'status-expired'}">${s.connected ? 'متصل' : 'غير متصل'}</span></td>
-                        <td>${new Date(s.created_at).toLocaleDateString('ar-EG')}</td>
-                        <td>
-                            <button class="action-btn" style="background:var(--bg-secondary);" onclick="sendTestMessage('${s.session_id}')" ${!s.connected ? 'disabled' : ''}><i class="fas fa-paper-plane"></i></button>
-                            ${s.connected ?
-                        `<button class="action-btn warning" onclick="disconnectSession('${s.session_id}')"><i class="fas fa-unlink"></i></button>` :
-                        `<button class="action-btn primary" onclick="reconnectSession('${s.session_id}')"><i class="fas fa-qrcode"></i></button>`
-                    }
-                            <button class="action-btn danger" onclick="deleteSession('${s.session_id}')"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = sessions.map(s => {
+                    const phone = s.phoneNumber ? '+' + s.phoneNumber : (s.phone_number || '-');
+                    const formattedPhone = phone !== '-' ? phone.replace(/(\+\d{1,3})(\d+)/, '$1 $2') : '-';
+
+                    return `
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 35px; height: 35px; background: var(--bg-secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:600;">${s.name}</div>
+                                        <small style="color:var(--text-muted);font-family:monospace;font-size: 0.75rem;">${s.session_id.substring(0, 15)}...</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span style="background: var(--bg-secondary); padding: 4px 8px; border-radius: 6px; font-size: 0.85rem;">${s.device_type || 'Android'}</span></td>
+                            <td style="direction:ltr;text-align:right; font-weight: 600;">${formattedPhone}</td>
+                            <td><span class="status-badge ${s.connected ? 'status-active' : 'status-expired'}">${s.connected ? 'متصل' : 'غير متصل'}</span></td>
+                            <td><span style="color: var(--text-muted); font-size: 0.85rem;">${new Date(s.created_at).toLocaleDateString('ar-EG')}</span></td>
+                            <td>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="action-btn" style="background:var(--bg-secondary);" onclick="openTestModal('${s.session_id}')" title="إرسال رسالة تجريبية" ${!s.connected ? 'disabled' : ''}><i class="fas fa-paper-plane"></i></button>
+                                    ${s.connected ?
+                            `<button class="action-btn warning" onclick="disconnectSession('${s.session_id}')" title="قطع الاتصال"><i class="fas fa-unlink"></i></button>` :
+                            `<button class="action-btn primary" onclick="reconnectSession('${s.session_id}')" title="إعادة الربط"><i class="fas fa-qrcode"></i></button>`
+                        }
+                                    <button class="action-btn danger" onclick="deleteSession('${s.session_id}')" title="حذف الجلسة"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             } catch (e) { console.error(e); }
         }
 
@@ -1004,25 +1154,77 @@
             } catch (e) { console.error(e); alert('خطأ'); }
         }
 
-        function sendTestMessage(sessionId) {
-            const phone = prompt('رقم الهاتف (مع رمز الدولة):');
-            if (!phone) return;
-            const msg = prompt('الرسالة:', 'رسالة تجريبية');
-            if (!msg) return;
+        // Send Test Message Modal Functions
+        function openTestModal(sessionId) {
+            document.getElementById('test-session-id').value = sessionId;
+            document.getElementById('test-phone-number').value = '';
+            document.getElementById('test-recipient-name').value = '';
+            document.getElementById('test-message-text').value = 'رسالة تجريبية من واصل';
+            document.getElementById('test-message-modal').classList.add('active');
+        }
 
-            fetch('/api/whatsapp/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sessionId, phoneNumber: phone, message: msg })
-            }).then(r => r.json()).then(d => {
-                alert(d.success ? '✅ تم الإرسال' : '❌ فشل: ' + d.error);
-            });
+        function closeTestModal() {
+            document.getElementById('test-message-modal').classList.remove('active');
+        }
+
+        async function submitTestMessage() {
+            const sessionId = document.getElementById('test-session-id').value;
+            const phone = document.getElementById('test-phone-number').value;
+            const recipientName = document.getElementById('test-recipient-name').value;
+            const messageText = document.getElementById('test-message-text').value;
+
+            if (!phone || !messageText) {
+                alert('⚠️ يرجى تعبئة جميع الحقول المطلوبة');
+                return;
+            }
+
+            const btn = document.querySelector('#test-message-modal .action-btn.primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+            btn.disabled = true;
+
+            try {
+                // Final message with name if provided
+                const finalMessage = recipientName ? `محبةً من ${recipientName}:\n${messageText}` : messageText;
+
+                const res = await fetch('/api/whatsapp/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: sessionId,
+                        phoneNumber: phone,
+                        message: finalMessage
+                    })
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    closeTestModal();
+                    if (window.showToast) {
+                        showToast('✅ تم إرسال الرسالة بنجاح!', 'success');
+                    } else {
+                        alert('✅ تم إرسال الرسالة بنجاح!');
+                    }
+                } else {
+                    alert('❌ فشل إرسال الرسالة: ' + (result.error || 'خطأ غير معروف'));
+                }
+            } catch (error) {
+                console.error('Send test message error:', error);
+                alert('❌ خطأ في الاتصال');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
 
         function openAddSessionModal() {
+            document.getElementById('session-name').value = '';
+            document.getElementById('session-phone').value = '';
             document.getElementById('country-search').value = 'مصر';
             document.getElementById('country-code').value = '+20';
             document.getElementById('selected-flag').textContent = '🇪🇬';
+            document.getElementById('display-prefix').textContent = '+20';
             document.getElementById('add-session-modal').classList.add('active');
         }
 
@@ -1031,10 +1233,15 @@
         function showCountryList() {
             const dd = document.getElementById('country-dropdown');
             dd.innerHTML = allCountries.map(c => `
-                <div onclick="selectCountry('${c.code}','${c.name}','${c.flag}')" style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg-secondary)'" onmouseout="this.style.background='transparent'">
-                    <span style="font-size:1.2em;">${c.flag}</span>
-                    <span>${c.name}</span>
-                    <span style="color:var(--text-muted);margin-right:auto;">${c.code}</span>
+                <div onclick="selectCountry('${c.code}','${c.name}','${c.flag}')" 
+                     style="padding:12px 15px; cursor:pointer; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border);" 
+                     onmouseover="this.style.background='var(--bg-secondary)'" 
+                     onmouseout="this.style.background='transparent'">
+                    <span style="font-size:1.3rem;">${c.flag}</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 0.95rem;">${c.name}</div>
+                    </div>
+                    <span style="color:var(--text-muted); font-weight: 700; font-family: monospace;">${c.code}</span>
                 </div>
             `).join('');
             dd.style.display = 'block';
@@ -1046,10 +1253,14 @@
             if (!term) { dd.style.display = 'none'; return; }
             const filtered = allCountries.filter(c => c.name.includes(term) || c.code.includes(term));
             dd.innerHTML = filtered.map(c => `
-                <div onclick="selectCountry('${c.code}','${c.name}','${c.flag}')" style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);">
-                    <span style="font-size:1.2em;">${c.flag}</span>
-                    <span>${c.name}</span>
-                    <span style="color:var(--text-muted);margin-right:auto;">${c.code}</span>
+                <div onclick="selectCountry('${c.code}','${c.name}','${c.flag}')" style="padding:12px 15px; cursor:pointer; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border);" 
+                     onmouseover="this.style.background='var(--bg-secondary)'" 
+                     onmouseout="this.style.background='transparent'">
+                    <span style="font-size:1.3rem;">${c.flag}</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 0.95rem;">${c.name}</div>
+                    </div>
+                    <span style="color:var(--text-muted); font-weight: 700; font-family: monospace;">${c.code}</span>
                 </div>
             `).join('');
             dd.style.display = 'block';
@@ -1134,7 +1345,163 @@
                 icon.classList.add(theme === 'dark' ? 'fa-sun' : 'fa-moon');
             });
         }
+
+        // Professional Toast System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            let icon = 'fa-info-circle';
+            if (type === 'success') icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-exclamation-circle';
+            if (type === 'warning') icon = 'fa-exclamation-triangle';
+
+            toast.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.5s ease-in forwards';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
     </script>
+
+    <style>
+        .modal.active {
+            display: flex !important;
+        }
+
+        /* Toast Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 11000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            color: var(--text-main);
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 250px;
+            border-right: 4px solid var(--primary);
+            animation: slideIn 0.3s ease-out;
+            font-weight: 500;
+        }
+
+        .toast.success {
+            border-right-color: #4caf50;
+        }
+
+        .toast.error {
+            border-right-color: #f44336;
+        }
+
+        .toast.warning {
+            border-right-color: #ff9800;
+        }
+
+        .toast i {
+            font-size: 1.2rem;
+        }
+
+        .toast.success i {
+            color: #4caf50;
+        }
+
+        .toast.error i {
+            color: #f44336;
+        }
+
+        .toast.warning i {
+            color: #ff9800;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    </style>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Test Message Modal -->
+    <div id="test-message-modal" class="modal" style="z-index: 10001;">
+        <div class="modal-content"
+            style="max-width: 500px; background: var(--bg-card); border-radius: 16px; padding: 24px;">
+            <div class="modal-header"
+                style="justify-content: space-between; margin-bottom: 20px; display: flex; align-items: center;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-paper-plane" style="color: var(--primary);"></i>
+                    إرسال رسالة تجريبية
+                </h3>
+                <span style="cursor: pointer; font-size: 1.5rem;" onclick="closeTestModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="test-session-id">
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">اسم المرسل (اختياري)</label>
+                    <input type="text" id="test-recipient-name" class="form-control"
+                        placeholder="أدخل اسمك أو اسم المرسل"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-main);">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">رقم الهاتف</label>
+                    <input type="text" id="test-phone-number" class="form-control"
+                        placeholder="أدخل رقم الهاتف (مثال: 010xxxxxxx)" dir="ltr"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-main);">
+                    <small style="display: block; margin-top: 5px; color: var(--text-muted); font-size: 0.85rem;">
+                        <i class="fas fa-info-circle"></i> سيتم تحويل الأرقام المحلية تلقائياً.
+                    </small>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">نص الرسالة</label>
+                    <textarea id="test-message-text" class="form-control" rows="4" placeholder="اكتب رسالتك هنا..."
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-main);">رسالة تجريبية من واصل</textarea>
+                </div>
+
+                <div class="form-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="action-btn danger" onclick="closeTestModal()"
+                        style="padding: 10px 20px; border-radius: 8px;">إلغاء</button>
+                    <button class="action-btn primary" onclick="submitTestMessage()"
+                        style="padding: 10px 20px; border-radius: 8px;">إرسال الآن</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

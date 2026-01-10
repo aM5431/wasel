@@ -24,16 +24,24 @@ class ServerOptimizer {
         // JSON parsing is already handled by express.json() middleware in server.js
         // Removing duplicate/unsafe middleware that was causing undefined JSON errors
 
-        // إضافة headers للتحسين
+        // إضافة headers للتحسين والأمان
         app.use((req, res, next) => {
-            res.set({
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0',
-                'X-Content-Type-Options': 'nosniff',
-                'X-Frame-Options': 'DENY',
-                'X-XSS-Protection': '1; mode=block'
-            });
+            const isDev = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
+            
+            // تعزيز سياسة أمن المحتوى (CSP)
+            // في وضع التطوير نسمح باتصالات أوسع لتجنب مشاكل DevTools و WebSockets
+            const cspHeader = isDev 
+                ? "default-src 'self' http: https: data: blob: ws: wss:; script-src 'self' 'unsafe-inline' 'unsafe-eval' http: https:; style-src 'self' 'unsafe-inline' http: https:; img-src 'self' data: blob: http: https:; connect-src * 'self' http: https: ws: wss:; font-src 'self' http: https: data:; object-src 'none'; frame-src 'self' http: https:;"
+                : "default-src 'self' https: data: blob: ws: wss:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; connect-src 'self' https: ws: wss:; font-src 'self' https: data:; object-src 'none'; frame-src 'self' https:;";
+
+            res.setHeader('Content-Security-Policy', cspHeader);
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+            res.setHeader('X-Content-Type-Options', 'nosniff');
+            res.setHeader('X-Frame-Options', 'DENY');
+            res.setHeader('X-XSS-Protection', '1; mode=block');
+            
             next();
         });
 
